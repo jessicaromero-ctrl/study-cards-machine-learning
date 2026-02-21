@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision Trees - Tarjetas de Estudio Nivel Maestría</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%);
+            padding: 40px 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #e0e0e0;
+            margin-bottom: 50px;
+            font-size: 1.2em;
+            font-style: italic;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 45px;
+            margin-bottom: 45px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            page-break-inside: avoid;
+        }
+
+        .card-header {
+            border-bottom: 4px solid #4caf50;
+            padding-bottom: 20px;
+            margin-bottom: 35px;
+        }
+
+        .card-title {
+            font-size: 2.2em;
+            color: #2e7d32;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .card-subtitle {
+            font-size: 1.15em;
+            color: #666;
+            font-style: italic;
+        }
+
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            color: #2e7d32;
+            font-weight: 600;
+            margin-bottom: 18px;
+            border-left: 5px solid #66bb6a;
+            padding-left: 18px;
+        }
+
+        .section-content {
+            font-size: 1.05em;
+            color: #444;
+            text-align: justify;
+            line-height: 1.8;
+        }
+
+        .formula-box {
+            background: #f8f9fa;
+            border-left: 5px solid #4caf50;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .formula-title {
+            font-weight: 600;
+            color: #2e7d32;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .definition-box {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            border-left: 5px solid #388e3c;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+            font-size: 1.05em;
+        }
+
+        .definition-title {
+            font-weight: 700;
+            color: #1b5e20;
+            margin-bottom: 12px;
+            font-size: 1.15em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .curiosity-box {
+            background: linear-gradient(135deg, #fff9c4 0%, #ffecb3 100%);
+            border-left: 5px solid #f57c00;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .curiosity-title {
+            font-weight: 600;
+            color: #e65100;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .key-points {
+            background: #e3f2fd;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            border-left: 5px solid #2196f3;
+        }
+
+        .key-points-title {
+            font-weight: 600;
+            color: #0d47a1;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .key-points ul {
+            padding-left: 25px;
+        }
+
+        .key-points li {
+            margin-bottom: 12px;
+            color: #1565c0;
+            font-weight: 500;
+        }
+
+        .applications-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .application-card {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #4caf50;
+            transition: transform 0.3s ease;
+        }
+
+        .application-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .application-title {
+            font-weight: 600;
+            color: #2e7d32;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.95em;
+        }
+
+        .comparison-table th {
+            background: #4caf50;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .note {
+            background: #fff3e0;
+            border-left: 5px solid #ff9800;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .note-title {
+            font-weight: 600;
+            color: #e65100;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+
+        .theorem-box {
+            background: #fce4ec;
+            border: 2px solid #e91e63;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .theorem-title {
+            font-weight: 700;
+            color: #c2185b;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .algorithm-box {
+            background: #e8eaf6;
+            border-left: 5px solid #673ab7;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+        }
+
+        .algorithm-title {
+            font-weight: 600;
+            color: #4527a0;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            font-family: 'Georgia', serif;
+        }
+
+        ul, ol {
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background: #ffeb3b;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #c2185b;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .card {
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .card {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .card-title {
+                font-size: 1.6em;
+            }
+
+            .applications-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DECISION TREES</h1>
+        <div class="subtitle">Árboles de Decisión - Material de Estudio Nivel Maestría</div>
+
+        <!-- TARJETA 1: FUNDAMENTOS TEÓRICOS -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Fundamentos Teóricos de Árboles de Decisión</div>
+                <div class="card-subtitle">Principios Básicos y Formulación Matemática</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Definición Formal</div>
+                <div class="definition-box">
+                    <div class="definition-title">Árbol de Decisión</div>
+                    <div class="section-content">
+                        Un árbol de decisión es un modelo de predicción no paramétrico que utiliza una estructura de árbol para representar un conjunto de reglas de decisión jerárquicas. Formalmente, es una función \(f: \mathcal{X} \to \mathcal{Y}\) que mapea el espacio de características \(\mathcal{X}\) al espacio de salida \(\mathcal{Y}\) mediante una partición recursiva del espacio de entrada. El árbol consta de:
+                        <ul style="margin-top: 10px; padding-left: 20px;">
+                            <li><strong>Nodos internos (decisión)</strong>: Contienen tests sobre atributos \(x_i \in \mathcal{X}\)</li>
+                            <li><strong>Ramas</strong>: Representan posibles valores u outcomes del test</li>
+                            <li><strong>Nodos hoja (terminales)</strong>: Contienen predicciones finales \(y \in \mathcal{Y}\)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Representación Matemática</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Partición del Espacio de Características:</div>
+                    $$\mathcal{X} = \bigcup_{j=1}^{J} R_j, \quad R_i \cap R_j = \emptyset \text{ para } i \neq j$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(R_j\) son regiones disjuntas del espacio de características (hojas del árbol).
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Función de Predicción:</div>
+                    $$f(\boldsymbol{x}) = \sum_{j=1}^{J} c_j \cdot \mathbb{1}(\boldsymbol{x} \in R_j)$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(c_j\) es la predicción constante en la región \(R_j\).
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Para Clasificación:</div>
+                    $$c_j = \arg\max_{k} \sum_{i: \boldsymbol{x}_i \in R_j} \mathbb{1}(y_i = k)$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        La clase mayoritaria en la región (votación por mayoría).
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Para Regresión:</div>
+                    $$c_j = \frac{1}{|R_j|}\sum_{i: \boldsymbol{x}_i \in R_j} y_i$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        El promedio de los valores objetivo en la región.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Estructura del Árbol</div>
+                
+                <div class="section-content">
+                    Un árbol se define recursivamente. Para un nodo \(t\):
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Nodo de Decisión (Interno):</div>
+                    $$t = \{s_t, \text{left}(t), \text{right}(t)\}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde:
+                        <ul style="margin-top: 8px;">
+                            <li>\(s_t\): Split (partición) en el nodo \(t\), de la forma \(x_j \leq \tau\)</li>
+                            <li>\(\text{left}(t)\): Subárbol izquierdo (cumple condición del split)</li>
+                            <li>\(\text{right}(t)\): Subárbol derecho (no cumple condición)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Nodo Hoja (Terminal):</div>
+                    $$t = \{c_t\}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(c_t\) es la predicción constante asociada a la hoja.
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Profundidad del Árbol:</div>
+                    $$\text{depth}(T) = \max_{l \in \text{leaves}(T)} \text{path\_length}(\text{root}, l)$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        La longitud del camino más largo desde la raíz a cualquier hoja.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Principio de Construcción Greedy</div>
+                
+                <div class="section-content">
+                    Los árboles de decisión se construyen mediante un algoritmo greedy (voraz) top-down que:
+                </div>
+
+                <div class="algorithm-box">
+                    <div class="algorithm-title">Algoritmo CART Recursivo (Pseudocódigo):</div>
+                    <pre style="line-height: 1.8;">
+BuildTree(D, features):
+    Si stopping_criterion(D):
+        return Leaf(prediction(D))
+    
+    best_split = None
+    best_score = -∞
+    
+    Para cada feature f en features:
+        Para cada threshold τ:
+            score = evaluate_split(D, f, τ)
+            Si score > best_score:
+                best_score = score
+                best_split = (f, τ)
+    
+    D_left, D_right = partition(D, best_split)
+    
+    left_subtree = BuildTree(D_left, features)
+    right_subtree = BuildTree(D_right, features)
+    
+    return Node(best_split, left_subtree, right_subtree)
+                    </pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Curiosidades Históricas</div>
+                
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Orígenes Multidisciplinarios</div>
+                    Los árboles de decisión tienen raíces en múltiples campos. En estadística, fueron desarrollados por Morgan y Sonquist (1963) como "Automatic Interaction Detection" (AID). En ciencias de la computación, Hunt, Marin y Stone (1966) desarrollaron el sistema Concept Learning System (CLS). Quinlan (1986) creó ID3, que evolucionó a C4.5 (1993), uno de los algoritmos más influyentes. Breiman et al. (1984) desarrollaron CART (Classification and Regression Trees), unificando clasificación y regresión.
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Equivalencia con Reglas if-then</div>
+                    Cada camino desde la raíz a una hoja puede representarse como una regla if-then conjuntiva. Por ejemplo: IF (edad > 30) AND (ingreso ≤ 50k) THEN clase = rechazado. Esta interpretabilidad hace a los árboles especialmente valiosos en dominios que requieren explicabilidad (medicina, finanzas, derecho).
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Conexión con Compresión de Datos</div>
+                    Las medidas de impureza como entropía están directamente relacionadas con teoría de información. Minimizar entropía al construir el árbol es equivalente a maximizar la compresión de datos según la codificación óptima de Huffman. Un árbol de decisión puede verse como un esquema de codificación para comprimir el dataset.
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">NP-Completitud</div>
+                    Encontrar el árbol de decisión óptimo (más pequeño que clasifica correctamente todos los datos) es NP-completo (Hyafil & Rivest, 1976). Por esto, todos los algoritmos prácticos usan heurísticas greedy que no garantizan optimalidad global pero son eficientes (\(O(n \cdot m \cdot \log n)\)).
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Ventajas Fundamentales</div>
+                
+                <div class="key-points">
+                    <div class="key-points-title">Por Qué Usar Árboles de Decisión</div>
+                    <ul>
+                        <li><strong>Interpretabilidad</strong>: Modelo de caja blanca, fácil de visualizar y explicar</li>
+                        <li><strong>No paramétrico</strong>: No asume distribución de datos, flexible a patrones complejos</li>
+                        <li><strong>Maneja características mixtas</strong>: Numéricas y categóricas sin encoding especial</li>
+                        <li><strong>Captura interacciones</strong>: Automáticamente modela interacciones y no linealidades</li>
+                        <li><strong>Invariante a transformaciones monótonas</strong>: No requiere normalización</li>
+                        <li><strong>Maneja valores faltantes</strong>: Mediante surrogate splits</li>
+                        <li><strong>Feature selection implícita</strong>: Solo usa características informativas</li>
+                        <li><strong>Eficiente</strong>: Predicción rápida \(O(\log n)\) en árbol balanceado</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Limitaciones Fundamentales</div>
+                
+                <div class="note">
+                    <div class="note-title">Desafíos de los Árboles de Decisión</div>
+                    <ul style="padding-left: 25px; margin-top: 10px;">
+                        <li><strong>Overfitting</strong>: Sin restricciones, árboles memorizan datos de entrenamiento</li>
+                        <li><strong>Inestabilidad</strong>: Pequeños cambios en datos pueden producir árboles muy diferentes (alta varianza)</li>
+                        <li><strong>Particiones axis-aligned</strong>: Dificultad con fronteras diagonales u oblicuas</li>
+                        <li><strong>Sesgo hacia características con más valores</strong>: Especialmente en gain ratio sin corrección</li>
+                        <li><strong>Dificultad con XOR</strong>: Problemas con interacciones complejas requieren árboles profundos</li>
+                        <li><strong>No extrapolación</strong>: Predicciones limitadas al rango de valores vistos</li>
+                        <li><strong>Desbalanceo de clases</strong>: Puede ignorar clases minoritarias sin ponderación</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 2: MEDIDAS DE IMPUREZA -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Medidas de Impureza y Criterios de Split</div>
+                <div class="card-subtitle">Funciones Objetivo para Construcción del Árbol</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Concepto de Impureza</div>
+                
+                <div class="definition-box">
+                    <div class="definition-title">Impureza de un Nodo</div>
+                    <div class="section-content">
+                        La impureza \(I(t)\) mide la heterogeneidad o desorden de las etiquetas en un nodo \(t\). Un nodo es puro (\(I(t) = 0\)) si todos los ejemplos pertenecen a la misma clase. La impureza es máxima cuando las clases están uniformemente distribuidas. Las medidas de impureza guían la selección del mejor split en cada nodo.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Entropía (Information Gain)</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Entropía de Shannon:</div>
+                    $$H(t) = -\sum_{k=1}^{K} p_k \log_2(p_k)$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde:
+                        <ul style="margin-top: 8px;">
+                            <li>\(p_k = \frac{n_k}{n_t}\): Proporción de ejemplos de clase \(k\) en nodo \(t\)</li>
+                            <li>\(n_k\): Número de ejemplos de clase \(k\) en nodo \(t\)</li>
+                            <li>\(n_t\): Total de ejemplos en nodo \(t\)</li>
+                            <li>\(K\): Número de clases</li>
+                        </ul>
+                        Por convención, \(0 \log_2(0) = 0\).
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Propiedades de la Entropía:</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        <ul>
+                            <li><strong>Mínimo</strong>: \(H(t) = 0\) cuando nodo es puro (una sola clase)</li>
+                            <li><strong>Máximo</strong>: \(H(t) = \log_2(K)\) cuando todas las clases son equiprobables</li>
+                            <li><strong>Concavidad</strong>: \(H\) es cóncava en \((p_1, ..., p_K)\)</li>
+                            <li><strong>Simetría</strong>: Invariante a permutación de clases</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Ganancia de Información (Information Gain):</div>
+                    $$IG(t, s) = H(t) - \sum_{i \in \{L,R\}} \frac{n_{t_i}}{n_t} H(t_i)$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde:
+                        <ul style="margin-top: 8px;">
+                            <li>\(s\): Split candidato que particiona \(t\) en hijos \(t_L\) (izquierda) y \(t_R\) (derecha)</li>
+                            <li>\(n_{t_i}\): Número de ejemplos en hijo \(t_i\)</li>
+                            <li>Segundo término: Entropía ponderada de los hijos</li>
+                        </ul>
+                        <strong>Objetivo</strong>: Maximizar \(IG(t, s)\) - seleccionar split que más reduce entropía.
+                    </div>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Interpretación de Teoría de Información</div>
+                    La ganancia de información mide la reducción en bits necesarios para codificar las clases después del split. Es equivalente a la información mutua \(I(Y; X_s)\) entre la variable objetivo \(Y\) y la característica de split \(X_s\).
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Índice de Gini</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Impureza de Gini:</div>
+                    $$Gini(t) = 1 - \sum_{k=1}^{K} p_k^2 = \sum_{k=1}^{K} p_k(1-p_k)$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Mide la probabilidad de clasificar incorrectamente un elemento elegido aleatoriamente si se etiqueta aleatoriamente según la distribución de clases en \(t\).
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Propiedades del Índice de Gini:</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        <ul>
+                            <li><strong>Mínimo</strong>: \(Gini(t) = 0\) cuando nodo es puro</li>
+                            <li><strong>Máximo</strong>: \(Gini(t) = 1 - \frac{1}{K}\) cuando clases equiprobables</li>
+                            <li><strong>Para 2 clases</strong>: \(Gini_{max} = 0.5\) cuando \(p_1 = p_2 = 0.5\)</li>
+                            <li><strong>Computacionalmente más eficiente</strong> que entropía (no requiere logaritmos)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Reducción de Gini (Gini Gain):</div>
+                    $$\Delta Gini(t, s) = Gini(t) - \sum_{i \in \{L,R\}} \frac{n_{t_i}}{n_t} Gini(t_i)$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Similar a ganancia de información, pero usando impureza de Gini.
+                    </div>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Gini vs Entropía en Práctica</div>
+                    Estudios empíricos (Breiman, Raileanu & Stoffel) muestran que Gini y Entropía producen árboles similares en rendimiento. Gini es marginalmente más rápido de calcular. Entropía tiende a producir árboles ligeramente más balanceados. La diferencia práctica es mínima en la mayoría de aplicaciones.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Error de Clasificación</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Tasa de Error de Clasificación:</div>
+                    $$E(t) = 1 - \max_k p_k$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Fracción de ejemplos no pertenecientes a la clase mayoritaria.
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Propiedades:</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        <ul>
+                            <li><strong>Menos sensible</strong> a cambios en distribución de clases que Gini/Entropía</li>
+                            <li><strong>No recomendado</strong> para crecimiento del árbol (función no diferenciable, insensible a mejoras)</li>
+                            <li><strong>Útil para poda</strong> (cost-complexity pruning)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Medidas para Regresión</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Varianza (Mean Squared Error):</div>
+                    $$Var(t) = \frac{1}{n_t}\sum_{i \in t}(y_i - \bar{y}_t)^2$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(\bar{y}_t = \frac{1}{n_t}\sum_{i \in t}y_i\) es el promedio de los valores objetivo en \(t\).
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Reducción de Varianza:</div>
+                    $$\Delta Var(t, s) = Var(t) - \sum_{i \in \{L,R\}} \frac{n_{t_i}}{n_t} Var(t_i)$$
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Mean Absolute Error (MAE):</div>
+                    $$MAE(t) = \frac{1}{n_t}\sum_{i \in t}|y_i - \text{median}_t(y)|$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Más robusto a outliers que MSE. La predicción óptima es la mediana en lugar de la media.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Gain Ratio (Corrección de Sesgo)</div>
+                
+                <div class="section-content">
+                    La ganancia de información tiene sesgo hacia características con muchos valores distintos:
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Split Information:</div>
+                    $$SI(t, s) = -\sum_{i=1}^{k} \frac{n_{t_i}}{n_t}\log_2\left(\frac{n_{t_i}}{n_t}\right)$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Entropía de la partición inducida por el split (sin considerar clases).
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Gain Ratio (C4.5):</div>
+                    $$GR(t, s) = \frac{IG(t, s)}{SI(t, s)}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Normaliza la ganancia de información por la entropía del split, penalizando splits que producen muchas particiones pequeñas.
+                    </div>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Problema del Gain Ratio</div>
+                    Gain Ratio puede ser inestable cuando \(SI(t,s)\) es muy pequeño (cercano a 0). C4.5 usa una heurística: primero filtra splits por ganancia de información superior a la media, luego entre estos selecciona el de mayor gain ratio.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Comparación de Medidas</div>
+                
+                <table class="comparison-table">
+                    <tr>
+                        <th>Medida</th>
+                        <th>Fórmula (binario)</th>
+                        <th>Ventajas</th>
+                        <th>Desventajas</th>
+                        <th>Uso Típico</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Entropía</strong></td>
+                        <td>\(-p\log p - (1-p)\log(1-p)\)</td>
+                        <td>Fundamentación teórica, árboles balanceados</td>
+                        <td>Costoso (logaritmos)</td>
+                        <td>ID3, C4.5, J48</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gini</strong></td>
+                        <td>\(2p(1-p)\)</td>
+                        <td>Rápido, sin logaritmos</td>
+                        <td>Menos fundamentación teórica</td>
+                        <td>CART, scikit-learn</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Error</strong></td>
+                        <td>\(1 - \max(p, 1-p)\)</td>
+                        <td>Directo, interpretable</td>
+                        <td>Insensible, no diferenciable</td>
+                        <td>Poda de árboles</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Varianza</strong></td>
+                        <td>\(\text{Var}(y)\)</td>
+                        <td>Estándar para regresión</td>
+                        <td>Sensible a outliers</td>
+                        <td>Árboles de regresión</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Curiosidades sobre Medidas</div>
+                
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Aproximación de Taylor</div>
+                    Para \(p\) cercano a 0.5, la entropía se puede aproximar mediante expansión de Taylor:
+                    $$H(p) \approx 1 - 2(p - 0.5)^2$$
+                    Esta aproximación cuadrática es similar en forma a \(Gini(p) = 2p(1-p)\), explicando por qué producen resultados similares.
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Conexión con Desigualdad de Gini Económica</div>
+                    El índice de Gini en árboles de decisión está relacionado conceptualmente con el coeficiente de Gini en economía (mide desigualdad de ingresos). Ambos cuantifican concentración: en economía, de riqueza; en ML, de clases.
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 3: ALGORITMOS DE CONSTRUCCIÓN -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Algoritmos de Construcción de Árboles</div>
+                <div class="card-subtitle">ID3, C4.5, CART y Variantes</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">ID3 (Iterative Dichotomiser 3)</div>
+                
+                <div class="definition-box">
+                    <div class="definition-title">ID3 - Ross Quinlan (1986)</div>
+                    <div class="section-content">
+                        ID3 fue el primer algoritmo popular de construcción de árboles basado en ganancia de información. Construye árboles de clasificación mediante selección greedy del atributo con mayor ganancia de información en cada paso. Solo maneja características categóricas y no incluye poda. Fue precursor de C4.5.
+                    </div>
+                </div>
+
+                <div class="algorithm-box">
+                    <div class="algorithm-title">Algoritmo ID3:</div>
+                    <pre style="line-height: 1.8;">
+ID3(ejemplos, atributos, atributo_objetivo):
+    crear nodo raíz
+    
+    Si todos los ejemplos tienen la misma clase:
+        return nodo hoja con esa clase
+    
+    Si atributos está vacío:
+        return nodo hoja con clase mayoritaria
+    
+    mejor_atributo = atributo con max IG(ejemplos, atributo)
+    
+    Para cada valor v de mejor_atributo:
+        añadir rama para v
+        ejemplos_v = subconjunto donde mejor_atributo = v
+        
+        Si ejemplos_v está vacío:
+            añadir hoja con clase mayoritaria de ejemplos
+        Sino:
+            añadir subárbol ID3(ejemplos_v, 
+                               atributos - {mejor_atributo},
+                               atributo_objetivo)
+    
+    return nodo con sus ramas
+                    </pre>
+                </div>
+
+                <div class="key-points">
+                    <div class="key-points-title">Características de ID3</div>
+                    <ul>
+                        <li><strong>Criterio</strong>: Ganancia de información (entropía)</li>
+                        <li><strong>Tipos de atributos</strong>: Solo categóricos</li>
+                        <li><strong>Valores faltantes</strong>: No maneja directamente</li>
+                        <li><strong>Poda</strong>: No incluye</li>
+                        <li><strong>Splits</strong>: Multiway (una rama por valor de atributo)</li>
+                        <li><strong>Overfitting</strong>: Susceptible sin poda</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">C4.5 (Successor to ID3)</div>
+                
+                <div class="definition-box">
+                    <div class="definition-title">C4.5 - Ross Quinlan (1993)</div>
+                    <div class="section-content">
+                        C4.5 es una mejora significativa de ID3 que incorpora múltiples extensiones: manejo de atributos continuos mediante discretización, valores faltantes, poda post-crecimiento, y uso de gain ratio para reducir sesgo. Es uno de los algoritmos más influyentes en ML. Su implementación en Java se conoce como J48 (en Weka).
+                    </div>
+                </div>
+
+                <div class="section-content">
+                    <strong>Mejoras sobre ID3:</strong>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">1. Manejo de Atributos Continuos:</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        Para atributo numérico \(A\), ordenar valores: \(v_1 < v_2 < ... < v_n\)<br>
+                        Candidatos a threshold: puntos medios \(\tau_i = \frac{v_i + v_{i+1}}{2}\)<br>
+                        Evaluar split binario \(A \leq \tau_i\) para cada \(\tau_i\)<br>
+                        Seleccionar \(\tau^*\) con máxima ganancia de información
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">2. Manejo de Valores Faltantes:</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        <strong>Durante entrenamiento</strong>: Distribuir ejemplos con valores faltantes proporcionalmente a la distribución observada<br>
+                        <strong>Durante predicción</strong>: Seguir todas las ramas con pesos proporcionales a frecuencias
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">3. Gain Ratio (corrige sesgo):</div>
+                    $$GR(S, A) = \frac{IG(S, A)}{SI(S, A)}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Penaliza atributos con muchos valores distintos.
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">4. Poda Basada en Error (Error-Based Pruning):</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        Estima error esperado en cada nodo usando límite superior del intervalo de confianza:<br>
+                        Si error estimado del subárbol > error estimado de la hoja, podar subárbol
+                    </div>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Sucesor Comercial: C5.0</div>
+                    Quinlan desarrolló C5.0, una versión comercial mejorada con boosting, reglas, y mayor eficiencia. C5.0 no es open source pero es significativamente más rápido y preciso que C4.5.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">CART (Classification and Regression Trees)</div>
+                
+                <div class="definition-box">
+                    <div class="definition-title">CART - Breiman, Friedman, Olshen, Stone (1984)</div>
+                    <div class="section-content">
+                        CART es un framework unificado para árboles de clasificación y regresión. A diferencia de ID3/C4.5, CART produce árboles binarios (cada nodo tiene exactamente dos hijos) y usa índice de Gini para clasificación. Incluye un método riguroso de poda mediante validación cruzada (cost-complexity pruning). Es la base de la implementación en scikit-learn.
+                    </div>
+                </div>
+
+                <div class="section-content">
+                    <strong>Características Distintivas:</strong>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">1. Splits Binarios:</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        Siempre divide en dos grupos:<br>
+                        <strong>Numérico</strong>: \(x_j \leq \tau\) vs \(x_j > \tau\)<br>
+                        <strong>Categórico</strong>: \(x_j \in S\) vs \(x_j \notin S\) donde \(S \subset \text{valores}(x_j)\)
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">2. Criterio de Gini para Clasificación:</div>
+                    $$\text{Mejor split} = \arg\min_{j,\tau} \left[\frac{n_L}{n}Gini(t_L) + \frac{n_R}{n}Gini(t_R)\right]$$
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">3. Criterion para Regresión (MSE):</div>
+                    $$\text{Mejor split} = \arg\min_{j,\tau} \left[\sum_{i \in R_L}(y_i - \bar{y}_L)^2 + \sum_{i \in R_R}(y_i - \bar{y}_R)^2\right]$$
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">4. Cost-Complexity Pruning:</div>
+                    $$R_\alpha(T) = R(T) + \alpha|T|$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde:
+                        <ul style="margin-top: 8px;">
+                            <li>\(R(T)\): Error de resubstitución del árbol \(T\)</li>
+                            <li>\(|T|\): Número de nodos hoja (complejidad)</li>
+                            <li>\(\alpha \geq 0\): Parámetro de complejidad (penalty)</li>
+                        </ul>
+                        Para cada \(\alpha\), existe un árbol óptimo \(T(\alpha)\). Se usa CV para seleccionar \(\alpha^*\).
+                    </div>
+                </div>
+
+                <div class="algorithm-box">
+                    <div class="algorithm-title">Algoritmo Cost-Complexity Pruning:</div>
+                    <pre style="line-height: 1.8;">
+1. Construir árbol completo T_max (crecido hasta criterio de parada)
+
+2. Para α creciente desde 0:
+   - Encontrar T(α) = árbol que minimiza R_α(T)
+   - Método: poda bottom-up, colapsar nodo si no mejora R_α
+
+3. Generar secuencia anidada: T_max ⊃ T₁ ⊃ T₂ ⊃ ... ⊃ {raíz}
+
+4. Usar k-fold CV para estimar error de cada T_i
+
+5. Seleccionar T* con mínimo error de validación cruzada
+
+6. Return T*
+                    </pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Comparación de Algoritmos</div>
+                
+                <table class="comparison-table">
+                    <tr>
+                        <th>Característica</th>
+                        <th>ID3</th>
+                        <th>C4.5</th>
+                        <th>CART</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Año</strong></td>
+                        <td>1986</td>
+                        <td>1993</td>
+                        <td>1984</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Criterio</strong></td>
+                        <td>Ganancia información</td>
+                        <td>Gain ratio</td>
+                        <td>Gini (clasif), MSE (regr)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tipo splits</strong></td>
+                        <td>Multiway</td>
+                        <td>Multiway</td>
+                        <td>Binario</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Atrib. continuos</strong></td>
+                        <td>No</td>
+                        <td>Sí (discretización)</td>
+                        <td>Sí (splits binarios)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Valores faltantes</strong></td>
+                        <td>No</td>
+                        <td>Sí</td>
+                        <td>Sí (surrogate splits)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Poda</strong></td>
+                        <td>No</td>
+                        <td>Error-based pruning</td>
+                        <td>Cost-complexity pruning</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Regresión</strong></td>
+                        <td>No</td>
+                        <td>No (solo clasificación)</td>
+                        <td>Sí</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Implementaciones</strong></td>
+                        <td>Histórico</td>
+                        <td>Weka (J48), R</td>
+                        <td>scikit-learn, R (rpart)</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Curiosidades sobre Algoritmos</div>
+                
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Controversia sobre Patentes</div>
+                    Los algoritmos de árboles de decisión han sido objeto de controversia de patentes. Varias empresas intentaron patentear variantes, generando debate sobre patentabilidad de algoritmos matemáticos. Finalmente, los conceptos básicos se consideran dominio público, pero implementaciones específicas pueden tener protección.
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Libro CART</div>
+                    El libro "Classification and Regression Trees" (1984) de Breiman et al. es uno de los textos más citados en estadística y ML, con más de 50,000 citas. Introdujo rigurosidad matemática al campo y estableció estándares que persisten hoy.
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 4: TÉCNICAS DE PODA -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Técnicas de Poda y Regularización</div>
+                <div class="card-subtitle">Prevención de Overfitting</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Motivación: El Problema del Overfitting</div>
+                
+                <div class="section-content">
+                    Un árbol sin restricciones crecerá hasta memorizar perfectamente los datos de entrenamiento (error de entrenamiento = 0), pero generalizará pobremente. La poda reduce complejidad del árbol para mejorar generalización.
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Trade-off Bias-Variance en Árboles:</div>
+                    $$MSE = \text{Bias}^2 + \text{Variance} + \text{Irreducible Error}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        <ul style="margin-top: 8px;">
+                            <li><strong>Árbol profundo</strong>: Bajo bias, alta variance (overfitting)</li>
+                            <li><strong>Árbol superficial</strong>: Alto bias, baja variance (underfitting)</li>
+                            <li><strong>Poda óptima</strong>: Balance que minimiza MSE total</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Pre-Poda (Early Stopping)</div>
+                
+                <div class="definition-box">
+                    <div class="definition-title">Pre-Poda</div>
+                    <div class="section-content">
+                        Detiene el crecimiento del árbol antes de alcanzar ajuste perfecto mediante criterios de parada. Previene construcción de ramas que no mejoran significativamente el modelo.
+                    </div>
+                </div>
+
+                <div class="key-points">
+                    <div class="key-points-title">Criterios de Parada Comunes</div>
+                    <ul>
+                        <li><strong>Profundidad máxima</strong> (<code>max_depth</code>): Limitar niveles del árbol</li>
+                        <li><strong>Mínimo de muestras para split</strong> (<code>min_samples_split</code>): Requerir \(n_{min}\) ejemplos para considerar split</li>
+                        <li><strong>Mínimo de muestras en hoja</strong> (<code>min_samples_leaf</code>): Cada hoja debe tener al menos \(n_{leaf}\) ejemplos</li>
+                        <li><strong>Mínima reducción de impureza</strong> (<code>min_impurity_decrease</code>): Split solo si \(\Delta I > \theta\)</li>
+                        <li><strong>Máximo número de hojas</strong> (<code>max_leaf_nodes</code>): Limitar tamaño total</li>
+                    </ul>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Criterio de Reducción Mínima de Impureza:</div>
+                    $$\Delta I(t,s) = I(t) - \frac{n_L}{n}I(t_L) - \frac{n_R}{n}I(t_R) \geq \theta$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Solo realizar split si mejora impureza en al menos \(\theta\).
+                    </div>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Ventajas y Desventajas de Pre-Poda</div>
+                    <strong>Ventajas</strong>: Computacionalmente eficiente, árbol más pequeño desde inicio<br>
+                    <strong>Desventajas</strong>: Puede detener prematuramente (split débil puede llevar a splits fuertes después), difícil configurar umbrales óptimos
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Post-Poda (Pruning)</div>
+                
+                <div class="definition-box">
+                    <div class="definition-title">Post-Poda</div>
+                    <div class="section-content">
+                        Primero construye árbol completo (o muy profundo), luego poda ramas de forma bottom-up. Generalmente produce mejores resultados que pre-poda porque puede explorar el espacio completo antes de decidir qué podar.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Reduced Error Pruning (REP)</div>
+                
+                <div class="section-content">
+                    Método simple que requiere conjunto de validación separado:
+                </div>
+
+                <div class="algorithm-box">
+                    <div class="algorithm-title">Algoritmo REP:</div>
+                    <pre style="line-height: 1.8;">
+1. Entrenar árbol completo T con datos de entrenamiento
+
+2. Repetir hasta que no haya mejora:
+   Para cada nodo interno t (bottom-up):
+       - Temporalmente reemplazar subárbol en t con hoja
+       - Evaluar error en conjunto de validación
+       - Si error no empeora (o mejora):
+           * Hacer poda permanente
+           * Continuar con próximo nodo
+
+3. Return árbol podado
+                    </pre>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Limitaciones de REP</div>
+                    Requiere particionar datos en train/validation, reduciendo datos disponibles para entrenamiento. Puede ser subóptimo con datasets pequeños. No obstante, es conceptualmente simple y efectivo.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Cost-Complexity Pruning (Weakest Link Pruning)</div>
+                
+                <div class="section-content">
+                    El método de poda más riguroso y utilizado (CART):
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Función de Costo-Complejidad:</div>
+                    $$R_\alpha(T) = R(T) + \alpha|T|$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde:
+                        <ul style="margin-top: 8px;">
+                            <li>\(R(T) = \sum_{t \in \text{leaves}(T)} \frac{n_t}{n} E(t)\): Error total ponderado</li>
+                            <li>\(E(t)\): Error en hoja \(t\) (tasa de clasificación incorrecta o MSE)</li>
+                            <li>\(|T|\): Número de nodos hoja (penalización por complejidad)</li>
+                            <li>\(\alpha\): Parámetro de complejidad que controla trade-off</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Criterio de Poda para Nodo t:</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        Para cada nodo interno \(t\), calcular:<br>
+                        $$\alpha(t) = \frac{R(t) - R(T_t)}{|T_t| - 1}$$
+                        donde \(T_t\) es el subárbol con raíz en \(t\).<br><br>
+                        <strong>Interpretación</strong>: \(\alpha(t)\) es el incremento en error por nodo removido si se poda \(T_t\).<br>
+                        <strong>Estrategia</strong>: Podar nodo con menor \(\alpha(t)\) (weakest link).
+                    </div>
+                </div>
+
+                <div class="algorithm-box">
+                    <div class="algorithm-title">Algoritmo Completo CCP:</div>
+                    <pre style="line-height: 1.8;">
+1. Construir árbol máximo T₀
+
+2. Generar secuencia de árboles anidados:
+   k = 0
+   Mientras |T_k| > 1:
+       - Encontrar nodo t* con mínimo α(t)
+       - T_{k+1} = T_k con subárbol en t* podado
+       - α_{k+1} = α(t*)
+       - k = k + 1
+
+3. Secuencia: T₀ ⊃ T₁ ⊃ ... ⊃ T_K = {raíz}
+   Parámetros: 0 = α₀ < α₁ < ... < α_K < ∞
+
+4. Para cada T_k, estimar error mediante k-fold CV
+
+5. Seleccionar T* que minimiza error de CV
+
+6. Return T*
+                    </pre>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">1-SE Rule</div>
+                    En práctica, se usa la regla "1 standard error": seleccionar el árbol más simple (menor \(|T|\)) cuyo error de CV esté dentro de 1 error estándar del mínimo. Proporciona modelos más parsimoniosos con similar rendimiento.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Error-Based Pruning (C4.5)</div>
+                
+                <div class="section-content">
+                    C4.5 usa una estimación pesimista del error para decidir podas:
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Estimación de Error con Corrección de Continuidad:</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        Para nodo con \(N\) ejemplos y \(E\) errores:<br>
+                        $$e = \frac{E + 0.5}{N}$$
+                        Error estimado con corrección de continuidad.<br><br>
+                        Límite superior del IC al 75% (usando distribución binomial):
+                        $$SE = \sqrt{\frac{e(1-e)}{N}}$$
+                        $$\text{Límite superior} \approx e + 0.69 \cdot SE$$
+                    </div>
+                </div>
+
+                <div class="algorithm-box">
+                    <div class="algorithm-title">Decisión de Poda C4.5:</div>
+                    <pre style="line-height: 1.8;">
+Para cada nodo interno t:
+    E_subárbol = error estimado del subárbol (suma ponderada de hojas)
+    E_hoja = error estimado si t se convierte en hoja
+    
+    Si E_hoja ≤ E_subárbol:
+        Podar subárbol, convertir t en hoja
+                    </pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Minimum Description Length (MDL)</div>
+                
+                <div class="section-content">
+                    Principio basado en teoría de información:
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Principio MDL:</div>
+                    $$\text{Costo Total} = \text{Costo}(T) + \text{Costo}(\text{Datos}|T)$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        <ul style="margin-top: 8px;">
+                            <li>\(\text{Costo}(T)\): Bits necesarios para codificar el árbol (complejidad)</li>
+                            <li>\(\text{Costo}(\text{Datos}|T)\): Bits para codificar excepciones/errores</li>
+                        </ul>
+                        <strong>Seleccionar árbol que minimiza costo total</strong> - balance automático entre complejidad y ajuste.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Comparación de Técnicas de Poda</div>
+                
+                <table class="comparison-table">
+                    <tr>
+                        <th>Técnica</th>
+                        <th>Tipo</th>
+                        <th>Ventajas</th>
+                        <th>Desventajas</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Pre-Poda</strong></td>
+                        <td>Prevención</td>
+                        <td>Rápida, simple</td>
+                        <td>Puede ser prematura, difícil configurar</td>
+                    </tr>
+                    <tr>
+                        <td><strong>REP</strong></td>
+                        <td>Post-poda</td>
+                        <td>Simple, efectiva</td>
+                        <td>Requiere datos de validación</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CCP</strong></td>
+                        <td>Post-poda</td>
+                        <td>Rigurosa, teoría sólida, CV integrada</td>
+                        <td>Computacionalmente costosa</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Error-Based</strong></td>
+                        <td>Post-poda</td>
+                        <td>No requiere validación separada</td>
+                        <td>Estimación de error puede ser imprecisa</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MDL</strong></td>
+                        <td>Criterio</td>
+                        <td>Fundamentación teórica fuerte</td>
+                        <td>Difícil cálculo exacto de costos</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Regularización mediante Hiperparámetros</div>
+                
+                <div class="key-points">
+                    <div class="key-points-title">Hiperparámetros Clave en scikit-learn</div>
+                    <ul>
+                        <li><code>max_depth</code>: Profundidad máxima - más importante, típicamente 3-20</li>
+                        <li><code>min_samples_split</code>: Mínimo para split - típicamente 2-100</li>
+                        <li><code>min_samples_leaf</code>: Mínimo en hoja - típicamente 1-50</li>
+                        <li><code>max_features</code>: Características a considerar por split - "sqrt", "log2", o fracción</li>
+                        <li><code>min_impurity_decrease</code>: Umbral de mejora - típicamente 0.0-0.1</li>
+                        <li><code>ccp_alpha</code>: Parámetro α para cost-complexity pruning - típicamente 0.0-0.1</li>
+                    </ul>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Recomendaciones Prácticas</div>
+                    <ul style="padding-left: 25px; margin-top: 10px;">
+                        <li>Comenzar con árbol sin restricciones, evaluar overfitting</li>
+                        <li>Usar GridSearchCV o RandomizedSearchCV para optimizar hiperparámetros</li>
+                        <li><code>max_depth</code> es el parámetro más impactante - ajustar primero</li>
+                        <li>Para datasets grandes, incrementar <code>min_samples_leaf</code></li>
+                        <li>CCP pruning (<code>ccp_alpha</code>) es la opción más rigurosa</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 5: APLICACIONES Y CASOS DE USO -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Aplicaciones Prácticas y Casos de Uso</div>
+                <div class="card-subtitle">Dominios y Escenarios Óptimos</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Clasificación</div>
+                <div class="applications-grid">
+                    <div class="application-card">
+                        <div class="application-title">Análisis de Riesgo Crediticio</div>
+                        Predicción de probabilidad de default en préstamos. Ventaja: interpretabilidad crítica para cumplimiento regulatorio (Fair Lending Laws). Características: ingresos, historial crediticio, ratio deuda/ingreso, empleo.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Diagnóstico Médico</div>
+                        Clasificación de enfermedades basada en síntomas, pruebas de laboratorio, historial médico. Ventaja: médicos pueden seguir la lógica de decisión. Ejemplo: diagnóstico de diabetes, enfermedades cardíacas.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Detección de Fraude</div>
+                        Identificación de transacciones fraudulentas en tiempo real. Características: monto, ubicación, hora, patrón de gasto. Los árboles permiten reglas explicables para revisión manual.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Marketing y Churn</div>
+                        Predicción de cancelación de clientes (churn). Segmentación de clientes para campañas dirigidas. Ventaja: identificar factores de riesgo accionables.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Recursos Humanos</div>
+                        Predicción de rotación de empleados, éxito en contratación. Características: salario, satisfacción, antigüedad, evaluaciones. Requiere interpretabilidad para justificar decisiones.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Control de Calidad</div>
+                        Clasificación de productos como defectuosos o no defectuosos basado en mediciones de proceso de manufactura. Permite identificar exactamente qué parámetros causan defectos.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Regresión</div>
+                <div class="applications-grid">
+                    <div class="application-card">
+                        <div class="application-title">Valoración de Bienes Raíces</div>
+                        Predicción de precios de viviendas. Características: ubicación, tamaño, número de habitaciones, edad. Los árboles capturan naturalmente interacciones (precio/m² varía por zona).
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Pronóstico de Demanda</div>
+                        Predicción de ventas, inventario necesario. Características: estacionalidad, promociones, tendencias. Los árboles manejan bien patrones no lineales y cambios de régimen.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Estimación de Tiempo</div>
+                        Predicción de duración de proyectos, tiempo de entrega. Características: complejidad, recursos, equipo. Útil para planificación y asignación de recursos.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Optimización de Procesos</div>
+                        Predicción de rendimiento de proceso industrial basado en parámetros de entrada. Permite identificar configuraciones óptimas de forma interpretable.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Cuándo Usar Árboles de Decisión</div>
+                
+                <div class="key-points">
+                    <div class="key-points-title">Escenarios Óptimos</div>
+                    <ul>
+                        <li><strong>Interpretabilidad es prioritaria</strong>: Dominios regulados, explicaciones requeridas</li>
+                        <li><strong>Datos tabulares heterogéneos</strong>: Mezcla de numéricas, categóricas, ordinales</li>
+                        <li><strong>Interacciones complejas</strong>: Relaciones entre características no lineales</li>
+                        <li><strong>Datos con valores faltantes</strong>: Árboles manejan naturalmente missingness</li>
+                        <li><strong>Features en diferentes escalas</strong>: No requiere normalización</li>
+                        <li><strong>Baseline rápido</strong>: Primera aproximación antes de modelos complejos</li>
+                        <li><strong>Feature importance</strong>: Identificar variables más predictivas</li>
+                        <li><strong>Datos no lineales</strong>: Captura patrones que modelos lineales no pueden</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Cuándo NO Usar Árboles Simples</div>
+                
+                <div class="note">
+                    <div class="note-title">Alternativas Recomendadas</div>
+                    <ul style="padding-left: 25px; margin-top: 10px;">
+                        <li><strong>Fronteras lineales simples</strong>: Usar regresión logística o SVM lineal - más eficiente</li>
+                        <li><strong>Alta dimensionalidad con pocos datos</strong>: Árboles pueden overfittear, considerar regularización fuerte o reducción de dimensión</li>
+                        <li><strong>Relaciones suaves y continuas</strong>: GAMs, splines o redes neuronales capturan mejor</li>
+                        <li><strong>Precisión máxima requerida</strong>: Ensembles (Random Forest, XGBoost) siempre superan a árbol único</li>
+                        <li><strong>Datos de series temporales</strong>: Modelos ARIMA, LSTMs más apropiados</li>
+                        <li><strong>Texto o imágenes</strong>: Deep Learning supera significativamente</li>
+                        <li><strong>Extrapolación</strong>: Árboles no extrapolan - limitados a rango de entrenamiento</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Comparación con Otros Algoritmos</div>
+                
+                <table class="comparison-table">
+                    <tr>
+                        <th>Criterio</th>
+                        <th>Decision Trees</th>
+                        <th>Random Forest</th>
+                        <th>Regresión Logística</th>
+                        <th>SVM</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Interpretabilidad</strong></td>
+                        <td>Muy Alta</td>
+                        <td>Baja</td>
+                        <td>Alta</td>
+                        <td>Baja</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Precisión</strong></td>
+                        <td>Media</td>
+                        <td>Alta</td>
+                        <td>Media</td>
+                        <td>Alta</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Velocidad entrenamiento</strong></td>
+                        <td>Rápida</td>
+                        <td>Media</td>
+                        <td>Muy Rápida</td>
+                        <td>Lenta</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Manejo no linealidad</strong></td>
+                        <td>Excelente</td>
+                        <td>Excelente</td>
+                        <td>Pobre (sin features engineered)</td>
+                        <td>Buena (con kernel)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Manejo datos faltantes</strong></td>
+                        <td>Excelente</td>
+                        <td>Excelente</td>
+                        <td>Requiere imputación</td>
+                        <td>Requiere imputación</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Requiere normalización</strong></td>
+                        <td>No</td>
+                        <td>No</td>
+                        <td>No, pero ayuda</td>
+                        <td>Sí (crítico)</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Estudios de Caso Reales</div>
+                
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Titanic Dataset - Caso Clásico</div>
+                    El dataset de Titanic es un ejemplo icónico donde árboles de decisión revelan reglas interpretables:
+                    <ul style="margin-top: 8px; padding-left: 20px;">
+                        <li>IF Sexo='Female' AND Clase='1st' → Sobrevive (probabilidad: 97%)</li>
+                        <li>IF Sexo='Male' AND Edad < 6 → Sobrevive (73%)</li>
+                        <li>IF Sexo='Male' AND Clase='3rd' → No sobrevive (84%)</li>
+                    </ul>
+                    Estas reglas son históricamente verificables (mujeres y niños primero, clase importaba).
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Detección de Spam en Email</div>
+                    Antes de Naive Bayes, árboles de decisión fueron usados para filtrado de spam con reglas como:
+                    <ul style="margin-top: 8px; padding-left: 20px;">
+                        <li>IF contiene("viagra") OR contiene("premio") → Spam</li>
+                        <li>IF ratio_mayúsculas > 0.5 AND caracteres_especiales > 10 → Spam</li>
+                    </ul>
+                    La interpretabilidad permitía a usuarios entender y ajustar filtros.
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 6: EXTENSIONES Y MEJORAS -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Extensiones y Variantes Avanzadas</div>
+                <div class="card-subtitle">Mejoras sobre Árboles Básicos</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Oblique Decision Trees</div>
+                
+                <div class="definition-box">
+                    <div class="definition-title">Árboles de Decisión Oblicuos</div>
+                    <div class="section-content">
+                        A diferencia de árboles CART que usan splits axis-aligned (\(x_j \leq \tau\)), los árboles oblicuos usan combinaciones lineales de características para splits.
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Split Oblicuo:</div>
+                    $$\boldsymbol{w}^T\boldsymbol{x} + b \leq 0$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(\boldsymbol{w} \in \mathbb{R}^m\) es un vector de pesos y \(b\) es el sesgo.<br>
+                        <strong>Ventaja</strong>: Fronteras de decisión más flexibles, árboles más compactos<br>
+                        <strong>Desventaja</strong>: Menos interpretable, más costoso computacionalmente
+                    </div>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Algoritmos para Oblique Trees</div>
+                    <ul style="padding-left: 25px; margin-top: 10px;">
+                        <li><strong>OC1 (Oblique Classifier 1)</strong>: Usa perturbaciones aleatorias para optimizar hiperplano</li>
+                        <li><strong>CART-LC</strong>: Combina CART con regresión lineal en nodos</li>
+                        <li><strong>SVM-Trees</strong>: Usa SVM para encontrar hiperplano óptimo en cada split</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Model Trees</div>
+                
+                <div class="definition-box">
+                    <div class="definition-title">Model Trees (M5)</div>
+                    <div class="section-content">
+                        En lugar de predicción constante en hojas, los model trees ajustan modelos de regresión lineal en cada hoja. Combinan la flexibilidad de árboles con suavidad de regresión lineal.
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Predicción en Hoja:</div>
+                    $$\hat{y}(\boldsymbol{x}) = \boldsymbol{w}_j^T\boldsymbol{x} + b_j \quad \text{si } \boldsymbol{x} \in R_j$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Cada región \(R_j\) tiene su propio modelo lineal \((\boldsymbol{w}_j, b_j)\).
+                    </div>
+                </div>
+
+                <div class="key-points">
+                    <div class="key-points-title">Ventajas de Model Trees</div>
+                    <ul>
+                        <li>Predicciones más suaves que árboles de regresión estándar</li>
+                        <li>Mejor extrapolación local dentro de regiones</li>
+                        <li>Árboles más compactos (menos hojas necesarias)</li>
+                        <li>Útil cuando relación es localmente lineal pero globalmente no lineal</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Conditional Inference Trees</div>
+                
+                <div class="section-content">
+                    Método basado en tests estadísticos rigurosos (Hothorn, Hornik, Zeileis, 2006):
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Procedimiento CTree:</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        <strong>1. Test de independencia</strong>: Para cada característica \(X_j\), test si \(X_j \perp Y\) (independiente de target)<br>
+                        <strong>2. Selección de variable</strong>: Elegir \(X_j\) con menor p-value<br>
+                        <strong>3. Si p-value > α</strong>: Detener (no hay asociación significativa)<br>
+                        <strong>4. Encontrar mejor split</strong> en \(X_j\) seleccionada<br>
+                        <strong>5. Recursión</strong> en particiones resultantes
+                    </div>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Ventajas de CTree</div>
+                    Evita sesgo de selección de variables (variable importance más confiable). No requiere poda - el stopping criterion está integrado. Proporciona intervalos de confianza para predicciones.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Extremely Randomized Trees</div>
+                
+                <div class="section-content">
+                    Extra-Trees introducen aleatoriedad adicional:
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Procedimiento Extra-Trees:</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        En cada nodo:<br>
+                        <strong>1.</strong> Seleccionar aleatoriamente \(K\) características<br>
+                        <strong>2.</strong> Para cada característica, generar threshold aleatorio \(\tau \sim Uniform(x_{min}, x_{max})\)<br>
+                        <strong>3.</strong> Evaluar los \(K\) splits aleatorios<br>
+                        <strong>4.</strong> Seleccionar el mejor de los \(K\) candidatos aleatorios
+                    </div>
+                </div>
+
+                <div class="key-points">
+                    <div class="key-points-title">Comparación Extra-Trees vs Random Forest</div>
+                    <ul>
+                        <li><strong>Extra-Trees</strong>: Thresholds aleatorios, más diversidad, más rápido</li>
+                        <li><strong>Random Forest</strong>: Thresholds óptimos, menor diversidad, más costoso</li>
+                        <li><strong>En ensemble</strong>: Extra-Trees a menudo comparable o superior en precisión</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Surrogate Splits</div>
+                
+                <div class="section-content">
+                    Técnica para manejar valores faltantes en CART:
+                </div>
+
+                <div class="definition-box">
+                    <div class="definition-title">Surrogate Split</div>
+                    <div class="section-content">
+                        Un split alternativo que imita la partición del split primario. Si el valor de la característica primaria falta, se usa el surrogate. Se ordenan surrogates por qué tan bien replican la partición primaria.
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Medida de Similitud de Partición:</div>
+                    $$\text{Similarity}(s_{primary}, s_{surrogate}) = \frac{\text{Concordancia}}{N}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Proporción de ejemplos que van al mismo hijo con ambos splits.
+                    </div>
+                </div>
+
+                <div class="algorithm-box">
+                    <div class="algorithm-title">Uso de Surrogates en Predicción:</div>
+                    <pre style="line-height: 1.8;">
+En nodo con split en característica X_j:
+    Si X_j está presente:
+        Usar split primario
+    Sino:
+        Intentar surrogate #1 (mayor similitud)
+        Si también falta, intentar surrogate #2
+        ...
+        Si todos faltan, usar distribución mayoría
+                    </pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Multioutput Trees</div>
+                
+                <div class="section-content">
+                    Extensión para predecir múltiples targets simultáneamente:
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Multi-Output Regression:</div>
+                    $$\boldsymbol{y} = (y^{(1)}, y^{(2)}, ..., y^{(k)}) \in \mathbb{R}^k$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Predicción en hoja: \(\bar{\boldsymbol{y}}_j = \frac{1}{n_j}\sum_{i \in R_j}\boldsymbol{y}_i\)
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Criterio de Split (MSE Multi-Output):</div>
+                    $$MSE = \frac{1}{k}\sum_{l=1}^{k}\sum_{i}\left(y_i^{(l)} - \bar{y}^{(l)}\right)^2$$
+                </div>
+
+                <div class="applications-grid">
+                    <div class="application-card">
+                        <div class="application-title">Aplicaciones Multi-Output</div>
+                        <ul style="padding-left: 20px; margin-top: 8px;">
+                            <li>Predicción de múltiples propiedades químicas</li>
+                            <li>Forecasting de series temporales multivariadas</li>
+                            <li>Multi-label classification (etiquetas no excluyentes)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Curiosidades sobre Extensiones</div>
+                
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Quest for Optimal Trees</div>
+                    A pesar de décadas de investigación, encontrar el árbol óptimo (global) sigue siendo computacionalmente intratable. Todas las mejoras son heurísticas que exploran diferentes partes del espacio de búsqueda o añaden estructura al problema.
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Revival con Deep Learning</div>
+                    Recientemente, hay renovado interés en combinar árboles con redes neuronales: Neural Oblivious Decision Trees (NODE), Deep Neural Decision Forests. Estos métodos aprenden árboles diferenciables end-to-end con backpropagation.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

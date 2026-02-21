@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naive Bayes - Tarjetas de Estudio Nivel Maestría</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #e0e0e0;
+            margin-bottom: 50px;
+            font-size: 1.2em;
+            font-style: italic;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 45px;
+            margin-bottom: 45px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            page-break-inside: avoid;
+        }
+
+        .card-header {
+            border-bottom: 4px solid #667eea;
+            padding-bottom: 20px;
+            margin-bottom: 35px;
+        }
+
+        .card-title {
+            font-size: 2.2em;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .card-subtitle {
+            font-size: 1.15em;
+            color: #666;
+            font-style: italic;
+        }
+
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 18px;
+            border-left: 5px solid #764ba2;
+            padding-left: 18px;
+        }
+
+        .section-content {
+            font-size: 1.05em;
+            color: #444;
+            text-align: justify;
+            line-height: 1.8;
+        }
+
+        .formula-box {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .formula-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .definition-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border-left: 5px solid #5e35b1;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+            font-size: 1.05em;
+        }
+
+        .definition-title {
+            font-weight: 700;
+            color: #5e35b1;
+            margin-bottom: 12px;
+            font-size: 1.15em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .curiosity-box {
+            background: linear-gradient(135deg, #fff9c4 0%, #ffecb3 100%);
+            border-left: 5px solid #f57c00;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .curiosity-title {
+            font-weight: 600;
+            color: #f57c00;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .key-points {
+            background: #e8f5e9;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            border-left: 5px solid #4caf50;
+        }
+
+        .key-points-title {
+            font-weight: 600;
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .key-points ul {
+            padding-left: 25px;
+        }
+
+        .key-points li {
+            margin-bottom: 12px;
+            color: #1b5e20;
+            font-weight: 500;
+        }
+
+        .applications-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .application-card {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .application-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .application-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.95em;
+        }
+
+        .comparison-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .note {
+            background: #fff3e0;
+            border-left: 5px solid #ff9800;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .note-title {
+            font-weight: 600;
+            color: #e65100;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+
+        .theorem-box {
+            background: #fce4ec;
+            border: 2px solid #e91e63;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .theorem-title {
+            font-weight: 700;
+            color: #c2185b;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        ul, ol {
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background: #fff9c4;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .card {
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .card {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .card-title {
+                font-size: 1.6em;
+            }
+
+            .applications-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>NAIVE BAYES</h1>
+        <div class="subtitle">Clasificadores Bayesianos - Material de Estudio Nivel Maestría</div>
+
+        <!-- TARJETA 1: FUNDAMENTOS GENERALES -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Fundamentos del Clasificador Naive Bayes</div>
+                <div class="card-subtitle">Principios Teóricos y Formulación Base</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Definición Formal</div>
+                <div class="definition-box">
+                    <div class="definition-title">Clasificador Naive Bayes</div>
+                    <div class="section-content">
+                        El clasificador Naive Bayes es una familia de algoritmos de clasificación probabilística basados en el teorema de Bayes con el supuesto de independencia condicional fuerte (naive) entre características. Dado un vector de características \(\boldsymbol{x} = (x_1, x_2, ..., x_n)\) y un conjunto de clases \(\mathcal{C} = \{c_1, c_2, ..., c_k\}\), el clasificador asigna la clase con la máxima probabilidad posterior.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Teorema de Bayes</div>
+                
+                <div class="theorem-box">
+                    <div class="theorem-title">Teorema de Bayes (Thomas Bayes, 1763)</div>
+                    <div class="formula-box" style="background: white; border: none;">
+                        $$P(C|X) = \frac{P(X|C) \cdot P(C)}{P(X)}$$
+                        <div style="margin-top: 15px; font-size: 0.95em; color: #666;">
+                            donde:
+                            <ul style="margin-top: 10px;">
+                                <li>\(P(C|X)\): Probabilidad posterior - probabilidad de la clase \(C\) dado el vector de características \(X\)</li>
+                                <li>\(P(X|C)\): Verosimilitud (likelihood) - probabilidad de observar \(X\) dado que pertenece a la clase \(C\)</li>
+                                <li>\(P(C)\): Probabilidad a priori - probabilidad marginal de la clase \(C\)</li>
+                                <li>\(P(X)\): Evidencia - probabilidad marginal de observar \(X\) (constante de normalización)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Expansión con Múltiples Características:</div>
+                    $$P(c|\boldsymbol{x}) = \frac{P(x_1, x_2, ..., x_n|c) \cdot P(c)}{P(x_1, x_2, ..., x_n)}$$
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Supuesto de Independencia Condicional</div>
+                
+                <div class="section-content">
+                    El supuesto "naive" (ingenuo) asume que todas las características son condicionalmente independientes entre sí dada la clase. Matemáticamente:
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Independencia Condicional:</div>
+                    $$P(x_1, x_2, ..., x_n|c) = \prod_{i=1}^{n} P(x_i|c)$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Este supuesto simplifica drásticamente el cálculo, reduciendo la complejidad de \(O(2^n)\) a \(O(n)\) parámetros a estimar.
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Formulación Completa del Clasificador:</div>
+                    $$P(c|\boldsymbol{x}) = \frac{P(c) \prod_{i=1}^{n} P(x_i|c)}{P(\boldsymbol{x})}$$
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Simplificación para Clasificación</div>
+                    Dado que \(P(\boldsymbol{x})\) es constante para todas las clases, la regla de clasificación se simplifica a:
+                    $$\hat{c} = \arg\max_{c \in \mathcal{C}} P(c) \prod_{i=1}^{n} P(x_i|c)$$
+                    Solo necesitamos comparar el numerador para todas las clases.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Formulación Logarítmica</div>
+                
+                <div class="section-content">
+                    Para evitar underflow numérico con productos de probabilidades pequeñas, se trabaja en espacio logarítmico:
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Clasificador Naive Bayes en Log-Space:</div>
+                    $$\hat{c} = \arg\max_{c \in \mathcal{C}} \left[\log P(c) + \sum_{i=1}^{n} \log P(x_i|c)\right]$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Esta formulación es numéricamente estable y computacionalmente eficiente.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Estimación de Probabilidades</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Probabilidad A Priori (Estimador de Máxima Verosimilitud):</div>
+                    $$\hat{P}(c) = \frac{N_c}{N}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(N_c\) es el número de muestras de la clase \(c\) y \(N\) es el total de muestras.
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Probabilidad Condicional (Variables Discretas):</div>
+                    $$\hat{P}(x_i|c) = \frac{N_{x_i,c}}{N_c}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(N_{x_i,c}\) es el número de veces que la característica \(x_i\) aparece en la clase \(c\).
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Suavizado de Laplace</div>
+                
+                <div class="section-content">
+                    Para evitar probabilidades cero cuando una combinación característica-clase no aparece en el entrenamiento:
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Suavizado de Laplace (Add-One Smoothing):</div>
+                    $$\hat{P}(x_i|c) = \frac{N_{x_i,c} + \alpha}{N_c + \alpha \cdot |V_i|}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde:
+                        <ul style="margin-top: 8px;">
+                            <li>\(\alpha\): Parámetro de suavizado (típicamente \(\alpha = 1\))</li>
+                            <li>\(|V_i|\): Cardinalidad del vocabulario/dominio de la característica \(i\)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Suavizado General (Lidstone Smoothing):</div>
+                    $$\hat{P}(x_i|c) = \frac{N_{x_i,c} + \alpha}{N_c + \alpha \cdot |V_i|}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Cuando \(\alpha = 1\): Suavizado de Laplace<br>
+                        Cuando \(\alpha \to 0\): MLE sin suavizado<br>
+                        Cuando \(\alpha = 0.5\): Jeffreys prior
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Curiosidades Históricas</div>
+                
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Origen del Teorema de Bayes</div>
+                    <div class="section-content">
+                        El teorema fue formulado por el reverendo Thomas Bayes (1701-1761) pero nunca fue publicado en vida. Fue descubierto póstumamente en sus papeles y publicado en 1763 por Richard Price en "An Essay towards solving a Problem in the Doctrine of Chances". El trabajo de Bayes surgió como respuesta al problema de inferencia inversa: dado que observamos ciertos datos, ¿qué podemos inferir sobre los parámetros del proceso que los generó?
+                    </div>
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">¿Por qué "Naive"?</div>
+                    <div class="section-content">
+                        El término "naive" (ingenuo) fue acuñado porque el supuesto de independencia condicional es casi siempre violado en la práctica. A pesar de esta violación sistemática, el clasificador frecuentemente funciona sorprendentemente bien. Este fenómeno se conoce como la "paradoja de Naive Bayes". Investigaciones han demostrado que el clasificador puede ser óptimo incluso cuando el supuesto de independencia es incorrecto, siempre que las dependencias entre características se "cancelen" al agregar evidencia.
+                    </div>
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Primer Filtro de Spam</div>
+                    <div class="section-content">
+                        Uno de los primeros y más exitosos usos de Naive Bayes fue en el filtrado de spam. Paul Graham popularizó su uso en 2002 con su artículo "A Plan for Spam", demostrando que un clasificador bayesiano simple podía filtrar spam con alta precisión. Esta aplicación impulsó su adopción masiva en servicios de email y estableció Naive Bayes como el algoritmo de referencia para clasificación de texto durante años.
+                    </div>
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Rendimiento Asintótico Óptimo</div>
+                    <div class="section-content">
+                        Teóricamente, cuando \(n \to \infty\), el clasificador Naive Bayes converge a la tasa de error óptima de Bayes si el supuesto de independencia condicional es verdadero. Sin embargo, incluso cuando es falso, Ng & Jordan (2002) demostraron que en ciertos regímenes Naive Bayes puede alcanzar su tasa de error asintótica más rápido que modelos discriminativos como regresión logística, especialmente con pocos datos de entrenamiento.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Propiedades Fundamentales</div>
+                
+                <div class="key-points">
+                    <div class="key-points-title">Ventajas Teóricas y Prácticas</div>
+                    <ul>
+                        <li><strong>Simplicidad computacional</strong>: Complejidad lineal \(O(n \cdot m)\) donde \(n\) es el número de muestras y \(m\) el número de características</li>
+                        <li><strong>Eficiencia en datos</strong>: Requiere relativamente pocas muestras de entrenamiento para estimar parámetros</li>
+                        <li><strong>Escalabilidad</strong>: Maneja bien alta dimensionalidad y grandes volúmenes de datos</li>
+                        <li><strong>Interpretabilidad</strong>: Modelo probabilístico transparente con semántica clara</li>
+                        <li><strong>Robustez al ruido</strong>: El suavizado de Laplace proporciona regularización implícita</li>
+                        <li><strong>Aprendizaje incremental</strong>: Fácil actualización online sin reentrenamiento completo</li>
+                        <li><strong>Manejo natural de multiclase</strong>: Extensión directa a \(k\) clases sin modificaciones</li>
+                    </ul>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Limitaciones Fundamentales</div>
+                    <ul style="padding-left: 25px; margin-top: 10px;">
+                        <li><strong>Supuesto de independencia</strong>: Raramente se cumple en práctica, puede llevar a estimaciones de probabilidad mal calibradas</li>
+                        <li><strong>Sensibilidad a características irrelevantes</strong>: Todas las características contribuyen por igual</li>
+                        <li><strong>Problema de frecuencia cero</strong>: Sin suavizado, probabilidad cero elimina toda evidencia</li>
+                        <li><strong>Estimaciones de probabilidad</strong>: Aunque las clasificaciones son buenas, las probabilidades pueden estar mal calibradas</li>
+                        <li><strong>No captura interacciones</strong>: Ignora correlaciones y dependencias entre características</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 2: GAUSSIAN NAIVE BAYES -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Gaussian Naive Bayes</div>
+                <div class="card-subtitle">Clasificador para Características Continuas con Distribución Normal</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Definición y Concepto</div>
+                <div class="definition-box">
+                    <div class="definition-title">Gaussian Naive Bayes (GNB)</div>
+                    <div class="section-content">
+                        Gaussian Naive Bayes es una variante del clasificador Naive Bayes que asume que las características continuas siguen una distribución gaussiana (normal) condicional a la clase. Para cada clase \(c\) y cada característica \(x_i\), se estiman los parámetros \(\mu_{i,c}\) (media) y \(\sigma_{i,c}^2\) (varianza) de una distribución normal. Es especialmente apropiado para datos numéricos continuos provenientes de procesos gaussianos o aproximadamente normales.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Formulación Matemática</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Función de Densidad de Probabilidad Gaussiana:</div>
+                    $$P(x_i|c) = \frac{1}{\sqrt{2\pi\sigma_{i,c}^2}} \exp\left(-\frac{(x_i - \mu_{i,c})^2}{2\sigma_{i,c}^2}\right)$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(\mu_{i,c}\) y \(\sigma_{i,c}^2\) son la media y varianza de la característica \(i\) en la clase \(c\).
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Clasificador Completo:</div>
+                    $$\hat{c} = \arg\max_{c} \left[P(c) \prod_{i=1}^{n} \frac{1}{\sqrt{2\pi\sigma_{i,c}^2}} \exp\left(-\frac{(x_i - \mu_{i,c})^2}{2\sigma_{i,c}^2}\right)\right]$$
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Formulación en Log-Space (Numéricamente Estable):</div>
+                    $$\hat{c} = \arg\max_{c} \left[\log P(c) - \sum_{i=1}^{n}\left(\frac{1}{2}\log(2\pi\sigma_{i,c}^2) + \frac{(x_i - \mu_{i,c})^2}{2\sigma_{i,c}^2}\right)\right]$$
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Estimación de Parámetros</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Media Muestral (Maximum Likelihood Estimator):</div>
+                    $$\hat{\mu}_{i,c} = \frac{1}{N_c}\sum_{j: y_j = c} x_{i,j}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Promedio de la característica \(i\) sobre todas las muestras de clase \(c\).
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Varianza Muestral:</div>
+                    $$\hat{\sigma}_{i,c}^2 = \frac{1}{N_c}\sum_{j: y_j = c} (x_{i,j} - \hat{\mu}_{i,c})^2$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Estimador sesgado de la varianza (MLE). Para estimador insesgado, usar \(N_c - 1\) en el denominador.
+                    </div>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Regularización de Varianza</div>
+                    En la práctica, se añade un término pequeño \(\epsilon\) a todas las varianzas para evitar división por cero:
+                    $$\hat{\sigma}_{i,c}^2 \leftarrow \hat{\sigma}_{i,c}^2 + \epsilon$$
+                    Típicamente \(\epsilon = 10^{-9}\) o la fracción más pequeña de la varianza de todas las características.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Frontera de Decisión</div>
+                
+                <div class="section-content">
+                    La frontera de decisión entre dos clases \(c_1\) y \(c_2\) se obtiene igualando las probabilidades posteriores:
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Ecuación de la Frontera de Decisión:</div>
+                    $$P(c_1)\prod_{i=1}^{n}P(x_i|c_1) = P(c_2)\prod_{i=1}^{n}P(x_i|c_2)$$
+                    
+                    <div style="margin-top: 15px;">
+                        Tomando logaritmos y expandiendo:
+                        $$\log P(c_1) - \log P(c_2) + \sum_{i=1}^{n}\left[\log P(x_i|c_1) - \log P(x_i|c_2)\right] = 0$$
+                    </div>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Geometría de la Frontera</div>
+                    Para Gaussian NB, la frontera de decisión es cuadrática en el espacio de características debido a los términos \((x_i - \mu)^2\). Si todas las clases tienen la misma varianza \(\sigma_{i,c}^2 = \sigma_i^2\), la frontera se reduce a lineal (hiperplano), equivalente a Linear Discriminant Analysis (LDA).
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Aplicaciones Prácticas</div>
+                <div class="applications-grid">
+                    <div class="application-card">
+                        <div class="application-title">Diagnóstico Médico</div>
+                        Clasificación de enfermedades basada en mediciones continuas (presión arterial, glucosa, temperatura, marcadores bioquímicos). Ejemplo: detección de diabetes usando glucosa en sangre, IMC, edad.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Reconocimiento de Patrones</div>
+                        Clasificación de señales continuas o series temporales con características extraídas (media, varianza, skewness). Ejemplo: clasificación de actividad física usando datos de acelerómetro.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Análisis de Sensores</div>
+                        Clasificación de lecturas de sensores en sistemas IoT. Ejemplo: detección de anomalías en maquinaria industrial usando vibración, temperatura, presión.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Bioinformática</div>
+                        Clasificación de expresión génica continua. Ejemplo: predicción de tipo de cáncer basado en niveles de expresión de genes (microarray data).
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Curiosidades</div>
+                
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Relación con Linear Discriminant Analysis</div>
+                    Cuando todas las clases tienen matrices de covarianza idénticas y se asume independencia entre características, Gaussian Naive Bayes es equivalente a Linear Discriminant Analysis (LDA) con covarianzas diagonales. Ambos producen fronteras de decisión lineales. La diferencia radica en la estimación: GNB usa MLE mientras LDA usa estimadores pooled de covarianza.
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Robustez a Violaciones de Normalidad</div>
+                    Sorprendentemente, Gaussian NB puede funcionar razonablemente bien incluso cuando los datos no son gaussianos, especialmente si las desviaciones de normalidad son similares entre clases. El clasificador es más sensible a diferencias en las formas de distribución entre clases que a la no-normalidad per se.
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Teorema del Límite Central</div>
+                    En muchas aplicaciones, aunque las características individuales no sean gaussianas, características derivadas (como promedios o sumas de múltiples mediciones) tienden a ser aproximadamente normales debido al Teorema del Límite Central, justificando el uso de GNB.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Consideraciones Prácticas</div>
+                
+                <div class="key-points">
+                    <div class="key-points-title">Mejores Prácticas</div>
+                    <ul>
+                        <li>Verificar normalidad mediante tests (Shapiro-Wilk, Kolmogorov-Smirnov) o Q-Q plots</li>
+                        <li>Considerar transformaciones (log, Box-Cox) para normalizar datos sesgados</li>
+                        <li>Estandarizar características para evitar dominancia de variables con mayor escala</li>
+                        <li>Usar validación cruzada para evaluar si GNB es apropiado para los datos</li>
+                        <li>Comparar con variantes no paramétricas si la normalidad es cuestionable</li>
+                    </ul>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Cuándo NO Usar Gaussian NB</div>
+                    <ul style="padding-left: 25px; margin-top: 10px;">
+                        <li>Datos con distribuciones multimodales o heavy-tailed</li>
+                        <li>Características con valores extremos o outliers severos</li>
+                        <li>Cuando existe fuerte correlación entre características (considerar QDA)</li>
+                        <li>Datos categóricos u ordinales (usar Multinomial o Categorical NB)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Complejidad Computacional</div>
+                <div class="section-content">
+                    <ul style="padding-left: 25px;">
+                        <li><strong>Entrenamiento</strong>: \(O(n \cdot m)\) - calcular medias y varianzas para cada característica por clase</li>
+                        <li><strong>Predicción</strong>: \(O(k \cdot m)\) - evaluar PDF gaussiana para cada clase y característica</li>
+                        <li><strong>Espacio</strong>: \(O(k \cdot m)\) - almacenar \(\mu_{i,c}\) y \(\sigma_{i,c}^2\) para cada clase y característica</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 3: MULTINOMIAL NAIVE BAYES -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Multinomial Naive Bayes</div>
+                <div class="card-subtitle">Clasificador para Datos de Conteo y Frecuencias Discretas</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Definición y Concepto</div>
+                <div class="definition-box">
+                    <div class="definition-title">Multinomial Naive Bayes (MNB)</div>
+                    <div class="section-content">
+                        Multinomial Naive Bayes modela las características como conteos provenientes de una distribución multinomial. Es el clasificador estándar para datos de frecuencia de términos, donde cada documento se representa como un vector de conteos de palabras. Asume que los datos fueron generados mediante un proceso de muestreo multinomial: para generar un documento de clase \(c\), se extraen \(N\) palabras independientemente de un vocabulario según las probabilidades \(P(w|c)\). Es particularmente efectivo para clasificación de texto y análisis de documentos.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Formulación Matemática</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Distribución Multinomial:</div>
+                    $$P(\boldsymbol{x}|c) = \frac{N!}{\prod_{i=1}^{|V|}x_i!} \prod_{i=1}^{|V|} p_{i,c}^{x_i}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde:
+                        <ul style="margin-top: 8px;">
+                            <li>\(\boldsymbol{x} = (x_1, ..., x_{|V|})\): Vector de conteos</li>
+                            <li>\(N = \sum_{i=1}^{|V|}x_i\): Número total de eventos (longitud del documento)</li>
+                            <li>\(p_{i,c} = P(w_i|c)\): Probabilidad de la palabra \(w_i\) en la clase \(c\)</li>
+                            <li>\(|V|\): Tamaño del vocabulario</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Clasificador Multinomial (omitiendo constantes):</div>
+                    $$\hat{c} = \arg\max_{c} \left[P(c) \prod_{i=1}^{|V|} p_{i,c}^{x_i}\right]$$
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Formulación en Log-Space:</div>
+                    $$\hat{c} = \arg\max_{c} \left[\log P(c) + \sum_{i=1}^{|V|} x_i \log p_{i,c}\right]$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Notar que el log de la constante multinomial no afecta la clasificación y se omite.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Estimación de Parámetros</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Probabilidad de Término sin Suavizado (MLE):</div>
+                    $$\hat{p}_{i,c} = \frac{N_{i,c}}{\sum_{j=1}^{|V|} N_{j,c}}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(N_{i,c}\) es el conteo total del término \(i\) en todos los documentos de clase \(c\).
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Probabilidad con Suavizado de Laplace:</div>
+                    $$\hat{p}_{i,c} = \frac{N_{i,c} + \alpha}{\sum_{j=1}^{|V|} N_{j,c} + \alpha|V|} = \frac{N_{i,c} + \alpha}{N_c + \alpha|V|}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde:
+                        <ul style="margin-top: 8px;">
+                            <li>\(\alpha\): Parámetro de suavizado (típicamente \(\alpha = 1\))</li>
+                            <li>\(N_c = \sum_{j=1}^{|V|} N_{j,c}\): Total de palabras en la clase \(c\)</li>
+                            <li>\(|V|\): Tamaño del vocabulario</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Importancia del Suavizado</div>
+                    Sin suavizado, si una palabra no aparece en los documentos de entrenamiento de una clase (\(N_{i,c} = 0\)), su probabilidad es cero y todo el producto se anula. El suavizado de Laplace asigna una pequeña probabilidad no cero a todos los términos, evitando este problema.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Representación de Documentos</div>
+                
+                <div class="section-content">
+                    Los documentos típicamente se representan mediante uno de estos esquemas:
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Bag of Words (BoW) - Conteo de Frecuencias:</div>
+                    $$\boldsymbol{x} = (n_1, n_2, ..., n_{|V|})$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(n_i\) es el número de veces que la palabra \(i\) aparece en el documento.
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">TF (Term Frequency):</div>
+                    $$\text{tf}(t, d) = \frac{f_{t,d}}{\sum_{t' \in d} f_{t',d}}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Frecuencia del término normalizada por la longitud del documento.
+                    </div>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">TF-IDF no es apropiado para Multinomial NB</div>
+                    Aunque TF-IDF es común en recuperación de información, introduce pesos no enteros que violan el supuesto multinomial de conteos discretos. Si se usa TF-IDF, las probabilidades resultantes no tienen interpretación probabilística estricta, aunque empíricamente puede funcionar.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Variantes y Extensiones</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Modelo de Dos Poisson (Two-Poisson Model):</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        Alternativa que modela conteos de palabras por clase usando dos distribuciones de Poisson independientes. Útil cuando las longitudes de documentos varían significativamente.
+                        $$P(x_i|c) = \frac{\lambda_{i,c}^{x_i} e^{-\lambda_{i,c}}}{x_i!}$$
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Normalización por Longitud:</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        Algunos investigadores normalizan documentos a longitud constante:
+                        $$\boldsymbol{x}' = \frac{L \cdot \boldsymbol{x}}{\sum_i x_i}$$
+                        donde \(L\) es una longitud de referencia.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Aplicaciones Prácticas</div>
+                <div class="applications-grid">
+                    <div class="application-card">
+                        <div class="application-title">Filtrado de Spam</div>
+                        Clasificación de emails como spam/no-spam basado en frecuencias de palabras. Clásica aplicación donde MNB ha demostrado excelente rendimiento. Implementado en filtros como SpamAssassin.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Análisis de Sentimientos</div>
+                        Clasificación de opiniones (positivo/negativo/neutral) en reviews, tweets, comentarios. Particularmente efectivo en dominios con vocabulario distintivo por sentimiento.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Categorización de Documentos</div>
+                        Clasificación automática de noticias en categorías (deportes, política, tecnología). Usado en sistemas de gestión documental y bibliotecas digitales.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Minería de Opinión</div>
+                        Análisis de feedback de clientes, detección de tópicos, clasificación de tickets de soporte. Escalable a grandes volúmenes de texto.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Identificación de Idioma</div>
+                        Detección automática del idioma de un texto basado en n-gramas de caracteres. Muy preciso incluso con textos cortos.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Clasificación de Secuencias Biológicas</div>
+                        Clasificación de secuencias de ADN/proteínas usando k-mers como "palabras". Aplicado en anotación genómica y predicción de función.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Curiosidades</div>
+                
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Paradoja de Zipf y MNB</div>
+                    La Ley de Zipf establece que en lenguaje natural, la frecuencia de una palabra es inversamente proporcional a su rango. Esto significa que pocas palabras son muy frecuentes y muchas palabras son raras. MNB maneja bien esta distribución heavy-tailed gracias al suavizado de Laplace, que previene que palabras raras dominen indebidamente.
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Éxito en Competencias</div>
+                    A pesar de su simplicidad, MNB ha ganado o quedado entre los primeros lugares en numerosas competencias de clasificación de texto. Su combinación de velocidad, simplicidad y efectividad lo hace difícil de superar con poco tiempo de desarrollo.
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Multinomial vs Multivariate Bernoulli</div>
+                    Existe confusión común entre estos modelos. Multinomial cuenta frecuencias (una palabra puede aparecer múltiples veces), mientras que Multivariate Bernoulli solo considera presencia/ausencia. Para clasificación de texto, Multinomial generalmente supera a Bernoulli porque captura información de frecuencia.
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Feature Selection Natural</div>
+                    MNB proporciona una forma natural de feature selection: términos con bajas probabilidades condicionales en todas las clases contribuyen poco a la clasificación y pueden removerse. Esto lleva a "Complement Naive Bayes", una variante que normaliza por clases complementarias.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Optimizaciones y Mejoras</div>
+                
+                <div class="key-points">
+                    <div class="key-points-title">Técnicas Avanzadas</div>
+                    <ul>
+                        <li><strong>Feature Hashing</strong>: Reducir dimensionalidad del vocabulario usando hashing para escalabilidad</li>
+                        <li><strong>TF-IDF weighting</strong>: Aunque no multinomial estricto, empíricamente puede mejorar rendimiento</li>
+                        <li><strong>N-gramas</strong>: Capturar algo de contexto usando bigramas o trigramas como características</li>
+                        <li><strong>Stemming/Lemmatización</strong>: Reducir vocabulario agrupando formas relacionadas</li>
+                        <li><strong>Stopword removal</strong>: Eliminar palabras muy frecuentes sin contenido discriminativo</li>
+                        <li><strong>Complemented Naive Bayes</strong>: Usar complemento de clases para datasets desbalanceados</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Complejidad Computacional</div>
+                <div class="section-content">
+                    <ul style="padding-left: 25px;">
+                        <li><strong>Entrenamiento</strong>: \(O(n \cdot l_{avg})\) donde \(l_{avg}\) es longitud promedio de documentos</li>
+                        <li><strong>Predicción</strong>: \(O(k \cdot l)\) donde \(k\) es número de clases y \(l\) es longitud del documento</li>
+                        <li><strong>Espacio</strong>: \(O(k \cdot |V|)\) para almacenar probabilidades de términos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 4: BERNOULLI NAIVE BAYES -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Bernoulli Naive Bayes</div>
+                <div class="card-subtitle">Clasificador para Características Binarias de Presencia/Ausencia</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Definición y Concepto</div>
+                <div class="definition-box">
+                    <div class="definition-title">Bernoulli Naive Bayes (BNB)</div>
+                    <div class="section-content">
+                        Bernoulli Naive Bayes modela cada característica como una variable aleatoria binaria de Bernoulli. A diferencia del modelo multinomial que cuenta frecuencias, Bernoulli solo considera presencia (1) o ausencia (0) de características. Es apropiado para datos binarios o cuando solo importa si una característica aparece o no, independientemente de cuántas veces. Cada documento se representa como un vector binario de longitud fija \(|V|\), donde cada posición indica si un término del vocabulario está presente.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Formulación Matemática</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Distribución de Bernoulli:</div>
+                    $$P(x_i|c) = p_{i,c}^{x_i}(1-p_{i,c})^{1-x_i} = \begin{cases}
+                    p_{i,c} & \text{si } x_i = 1\\
+                    1-p_{i,c} & \text{si } x_i = 0
+                    \end{cases}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(p_{i,c} = P(x_i = 1|c)\) es la probabilidad de que la característica \(i\) esté presente en clase \(c\).
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Clasificador Completo:</div>
+                    $$P(c|\boldsymbol{x}) \propto P(c) \prod_{i=1}^{|V|} p_{i,c}^{x_i}(1-p_{i,c})^{1-x_i}$$
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Formulación en Log-Space:</div>
+                    $$\log P(c|\boldsymbol{x}) = \log P(c) + \sum_{i=1}^{|V|} \left[x_i \log p_{i,c} + (1-x_i)\log(1-p_{i,c})\right]$$
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Forma Simplificada:</div>
+                    $$\log P(c|\boldsymbol{x}) = \log P(c) + \sum_{i=1}^{|V|} x_i \log\frac{p_{i,c}}{1-p_{i,c}} + \sum_{i=1}^{|V|}\log(1-p_{i,c})$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        El segundo término suma sobre todo el vocabulario (constante para clasificación).
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Estimación de Parámetros</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Probabilidad sin Suavizado (MLE):</div>
+                    $$\hat{p}_{i,c} = \frac{N_{i,c}}{N_c}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde:
+                        <ul style="margin-top: 8px;">
+                            <li>\(N_{i,c}\): Número de documentos de clase \(c\) que contienen el término \(i\)</li>
+                            <li>\(N_c\): Total de documentos de clase \(c\)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Probabilidad con Suavizado de Laplace:</div>
+                    $$\hat{p}_{i,c} = \frac{N_{i,c} + \alpha}{N_c + 2\alpha}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Notar el factor 2 en el denominador (dos posibles valores: 0 y 1).
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Diferencias Clave con Multinomial NB</div>
+                
+                <div class="comparison-table">
+                    <tr>
+                        <th>Aspecto</th>
+                        <th>Bernoulli NB</th>
+                        <th>Multinomial NB</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Representación</strong></td>
+                        <td>Vector binario de presencia/ausencia</td>
+                        <td>Vector de conteos de frecuencia</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Información capturada</strong></td>
+                        <td>Solo si aparece o no</td>
+                        <td>Cuántas veces aparece</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ausencias explícitas</strong></td>
+                        <td>Sí - \((1-p_{i,c})^{1-x_i}\) penaliza ausencias</td>
+                        <td>No - términos ausentes no contribuyen</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mejor para</strong></td>
+                        <td>Documentos cortos, vocabulario informativo pequeño</td>
+                        <td>Documentos largos, análisis de frecuencias</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Complejidad predicción</strong></td>
+                        <td>\(O(|V|)\) - procesa todo el vocabulario</td>
+                        <td>\(O(l)\) - solo términos presentes en documento</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    <div class="note-title">Cuándo Usar Cada Uno</div>
+                    <ul style="padding-left: 25px; margin-top: 10px;">
+                        <li><strong>Bernoulli</strong>: Cuando ausencia de términos es informativa (ej: un email sin "viagra" es menos probable que sea spam)</li>
+                        <li><strong>Multinomial</strong>: Cuando frecuencia importa (ej: documento de economía menciona "inflación" muchas veces)</li>
+                        <li><strong>Rule of thumb</strong>: Para documentos largos (>100 palabras), Multinomial suele superar a Bernoulli</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Aplicaciones Prácticas</div>
+                <div class="applications-grid">
+                    <div class="application-card">
+                        <div class="application-title">Clasificación de Tweets</div>
+                        Tweets cortos donde presencia/ausencia de palabras clave es más informativa que frecuencia. Ejemplo: detección de sentimiento en Twitter.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Detección de Spam (SMS)</div>
+                        Mensajes cortos donde ciertas palabras "trigger" (premio, gratis, click) son indicadores fuertes. La presencia es más relevante que repetición.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Feature Selection</div>
+                        Cuando se ha realizado selección agresiva de características y solo términos más discriminativos permanecen. Su mera presencia es suficiente.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Análisis de Encuestas</div>
+                        Respuestas binarias (sí/no) a preguntas. Cada pregunta es una característica de Bernoulli.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Diagnosis Médica</div>
+                        Presencia/ausencia de síntomas binarios. Ejemplo: tiene_fiebre (sí/no), tiene_tos (sí/no).
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Detección de Malware</div>
+                        Presencia/ausencia de llamadas a APIs específicas, patrones de comportamiento binarios.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Curiosidades</div>
+                
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Penalización de Ausencias</div>
+                    Una característica única de Bernoulli NB es que penaliza explícitamente ausencias de términos a través del factor \((1-p_{i,c})^{1-x_i}\). Esto puede ser ventajoso cuando ausencia de ciertos términos es fuertemente indicativa (ej: email sin saludos formales puede ser spam), pero puede ser perjudicial en vocabularios grandes donde la mayoría de términos están ausentes en cualquier documento.
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Conexión con Regresión Logística</div>
+                    Bernoulli NB con clases equiprobables es equivalente a regresión logística con características binarias y sin regularización. Ambos producen fronteras de decisión lineales en el espacio de características binarias. La diferencia está en la estimación: NB usa MLE generativo mientras logística usa MLE discriminativo.
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Escalabilidad a Grandes Vocabularios</div>
+                    A diferencia de Multinomial NB que solo procesa términos presentes, Bernoulli NB debe iterar sobre todo el vocabulario durante predicción. Esto lo hace menos eficiente para vocabularios muy grandes (\(|V| > 10^6\)), a menos que se implemente con sparse representations optimizadas.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Optimizaciones Prácticas</div>
+                
+                <div class="key-points">
+                    <div class="key-points-title">Mejoras de Implementación</div>
+                    <ul>
+                        <li><strong>Sparse representation</strong>: Almacenar solo términos con \(p_{i,c} \neq 0.5\) (informativos)</li>
+                        <li><strong>Feature binarization</strong>: Convertir conteos a binario con threshold óptimo</li>
+                        <li><strong>Vocabulary pruning</strong>: Eliminar términos con probabilidades similares en todas las clases</li>
+                        <li><strong>Cache log-probabilities</strong>: Precomputar \(\log p_{i,c}\) y \(\log(1-p_{i,c})\)</li>
+                        <li><strong>Early stopping</strong>: Si probabilidad de una clase es extremadamente baja, no calcular el resto</li>
+                    </ul>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Binarización de Características Continuas</div>
+                    Para usar Bernoulli NB con características continuas:
+                    <ul style="padding-left: 25px; margin-top: 10px;">
+                        <li>Definir threshold \(\tau\): \(x_i' = \mathbb{1}(x_i > \tau)\)</li>
+                        <li>Usar mediana o media como threshold</li>
+                        <li>Considerar múltiples thresholds y crear características binarias múltiples</li>
+                        <li>Validación cruzada para optimizar threshold</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Complejidad Computacional</div>
+                <div class="section-content">
+                    <ul style="padding-left: 25px;">
+                        <li><strong>Entrenamiento</strong>: \(O(n \cdot |V|)\) - procesar presencia/ausencia de cada término en cada documento</li>
+                        <li><strong>Predicción</strong>: \(O(k \cdot |V|)\) - debe evaluar todos los términos del vocabulario</li>
+                        <li><strong>Espacio</strong>: \(O(k \cdot |V|)\) - almacenar \(p_{i,c}\) para cada término y clase</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 5: CATEGORICAL NAIVE BAYES -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Categorical Naive Bayes</div>
+                <div class="card-subtitle">Clasificador para Variables Categóricas Discretas</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Definición y Concepto</div>
+                <div class="definition-box">
+                    <div class="definition-title">Categorical Naive Bayes (CNB)</div>
+                    <div class="section-content">
+                        Categorical Naive Bayes es una generalización de Bernoulli NB para características categóricas con más de dos valores. Cada característica puede tomar uno de varios valores discretos de un conjunto finito. Modela cada característica usando una distribución categórica (multinomial de un solo ensayo) condicional a la clase. Es apropiado para datos con características nominales u ordinales discretas, como color, tipo, categoría, etc. A diferencia de Multinomial NB que suma frecuencias, Categorical NB trata cada característica independientemente con su propio conjunto de categorías posibles.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Formulación Matemática</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Distribución Categórica:</div>
+                    $$P(x_i = k|c) = p_{i,k,c}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde:
+                        <ul style="margin-top: 8px;">
+                            <li>\(x_i\): Característica \(i\)</li>
+                            <li>\(k\): Uno de los valores posibles de \(x_i\) (categoría)</li>
+                            <li>\(p_{i,k,c}\): Probabilidad de que \(x_i\) tome el valor \(k\) en la clase \(c\)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Restricción de Distribución Categórica:</div>
+                    $$\sum_{k \in \text{dom}(x_i)} p_{i,k,c} = 1 \quad \forall i, c$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        Las probabilidades sobre todas las categorías de cada característica suman 1.
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Clasificador Completo:</div>
+                    $$\hat{c} = \arg\max_{c} P(c) \prod_{i=1}^{m} P(x_i|c)$$
+                    $$= \arg\max_{c} P(c) \prod_{i=1}^{m} p_{i,x_i,c}$$
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Formulación en Log-Space:</div>
+                    $$\hat{c} = \arg\max_{c} \left[\log P(c) + \sum_{i=1}^{m} \log p_{i,x_i,c}\right]$$
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Estimación de Parámetros</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Probabilidad Condicional sin Suavizado (MLE):</div>
+                    $$\hat{p}_{i,k,c} = \frac{N_{i,k,c}}{N_c}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(N_{i,k,c}\) es el número de muestras de clase \(c\) donde la característica \(i\) tiene valor \(k\).
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Probabilidad con Suavizado de Laplace:</div>
+                    $$\hat{p}_{i,k,c} = \frac{N_{i,k,c} + \alpha}{N_c + \alpha |\text{dom}(x_i)|}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(|\text{dom}(x_i)|\) es el número de categorías posibles de la característica \(i\).
+                    </div>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">Importancia de Conocer el Dominio Completo</div>
+                    Es crítico conocer todas las categorías posibles de cada característica a priori, incluso si algunas no aparecen en el conjunto de entrenamiento. Esto asegura estimaciones de probabilidad correctas con suavizado.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Encoding de Variables Categóricas</div>
+                
+                <div class="section-content">
+                    Hay diferentes formas de representar variables categóricas:
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Label Encoding (Ordinal):</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        Asignar enteros a categorías: Rojo=0, Verde=1, Azul=2<br>
+                        <strong>Apropiado para CNB</strong>: Sí, Categorical NB trata cada entero como categoría discreta sin asumir orden
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">One-Hot Encoding:</div>
+                    <div style="margin-top: 10px; font-size: 0.95em;">
+                        Crear variable binaria por categoría: [1,0,0], [0,1,0], [0,0,1]<br>
+                        <strong>Apropiado para CNB</strong>: No directamente - usar Bernoulli NB en su lugar. One-hot rompe la semántica de característica categórica única.
+                    </div>
+                </div>
+
+                <div class="note">
+                    <div class="note-title">CNB vs Bernoulli NB con One-Hot</div>
+                    Categorical NB con una característica de K categorías usa K parámetros y una restricción \(\sum p_k = 1\). One-hot con Bernoulli NB usa K características independientes sin restricción de suma, lo que puede llevar a probabilidades mal calibradas. CNB es más apropiado conceptualmente para variables categóricas naturales.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Aplicaciones Prácticas</div>
+                <div class="applications-grid">
+                    <div class="application-card">
+                        <div class="application-title">Análisis de Datos Tabulares</div>
+                        Datasets con mezcla de características categóricas: tipo de producto, categoría de cliente, región geográfica, nivel educativo.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Recomendación de Productos</div>
+                        Clasificación basada en atributos categóricos: marca, categoría, color, talla. Ejemplo: recomendar productos basado en preferencias categóricas.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Encuestas y Cuestionarios</div>
+                        Respuestas de opción múltiple: "¿Cuál es su nivel de satisfacción?" (Muy insatisfecho, Insatisfecho, Neutral, Satisfecho, Muy satisfecho).
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Análisis Genético</div>
+                        Clasificación basada en genotipos discretos: AA, Aa, aa en múltiples loci. Cada SNP es una característica categórica.
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Clasificación de Imágenes (features extraídas)</div>
+                        Después de cuantización de características visuales: tipo de textura (suave/rugosa/áspera), forma dominante (circular/rectangular/irregular).
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Análisis de Comportamiento</div>
+                        Secuencias de acciones categóricas: tipo_acción (click, scroll, purchase), página_visitada (home, producto, checkout).
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Curiosidades</div>
+                
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Conexión con Tablas de Contingencia</div>
+                    Los parámetros de Categorical NB son esencialmente frecuencias relativas de tablas de contingencia multidimensionales. Para cada característica categórica y clase, se construye una tabla de contingencia 2D que resume las frecuencias observadas. El modelo es entonces un conjunto de estas tablas independientes bajo el supuesto naive.
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Categorical como Caso General</div>
+                    Categorical NB puede verse como la forma más general de Naive Bayes para datos discretos:
+                    <ul style="margin-top: 8px; padding-left: 20px;">
+                        <li>Bernoulli NB: Categorical NB con \(|\text{dom}(x_i)| = 2\) para todo \(i\)</li>
+                        <li>Multinomial NB: Más complejo - múltiples ensayos de una distribución categórica compartida</li>
+                    </ul>
+                </div>
+
+                <div class="curiosity-box">
+                    <div class="curiosity-title">Escalabilidad con Número de Categorías</div>
+                    El número de parámetros crece linealmente con el número de categorías: \(O(k \cdot \sum_i |\text{dom}(x_i)|)\). Para características con muchas categorías (>100), considerar agrupamiento o embedding antes de aplicar CNB.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Manejo de Categorías No Vistas</div>
+                
+                <div class="key-points">
+                    <div class="key-points-title">Estrategias para Categorías Nuevas</div>
+                    <ul>
+                        <li><strong>Suavizado de Laplace</strong>: Asigna probabilidad no cero a todas las categorías conocidas</li>
+                        <li><strong>Categoría "Desconocida"</strong>: Crear categoría especial para valores no vistos</li>
+                        <li><strong>Distribución uniforme</strong>: Asignar probabilidad uniforme sobre todas las clases para categorías nuevas</li>
+                        <li><strong>Ignorar característica</strong>: No usar esa característica en la clasificación si contiene valor no visto</li>
+                        <li><strong>Imputación</strong>: Reemplazar categoría nueva con la más frecuente en entrenamiento</li>
+                    </ul>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Probabilidad para Categoría No Vista (con Laplace):</div>
+                    $$\hat{p}_{i,k_{new},c} = \frac{\alpha}{N_c + \alpha |\text{dom}(x_i)|}$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        La categoría nueva recibe la probabilidad mínima del suavizado.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Consideraciones para Variables Ordinales</div>
+                
+                <div class="note">
+                    <div class="note-title">Variables Ordinales: ¿Categorical o Gaussian?</div>
+                    <div style="margin-top: 10px;">
+                        Para variables ordinales (con orden natural como "bajo < medio < alto"):
+                        <ul style="padding-left: 25px; margin-top: 10px;">
+                            <li><strong>Categorical NB</strong>: Ignora orden, trata categorías como nominales. Apropiado si distancias entre niveles no son uniformes.</li>
+                            <li><strong>Ordinal encoding + Gaussian NB</strong>: Asume distancias uniformes entre niveles y distribución continua subyacente.</li>
+                            <li><strong>Recomendación</strong>: Probar ambos enfoques con validación cruzada. Si hay muchas categorías ordinales (>5), encoding numérico + Gaussian puede funcionar mejor.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Complejidad Computacional</div>
+                <div class="section-content">
+                    <ul style="padding-left: 25px;">
+                        <li><strong>Entrenamiento</strong>: \(O(n \cdot m)\) - contar ocurrencias de cada combinación categoría-clase</li>
+                        <li><strong>Predicción</strong>: \(O(k \cdot m)\) - lookup de probabilidad para cada característica y clase</li>
+                        <li><strong>Espacio</strong>: \(O(k \cdot \sum_{i=1}^{m} |\text{dom}(x_i)|)\) - almacenar probabilidad de cada categoría por clase</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 6: COMPARACIÓN Y SELECCIÓN -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Comparación y Selección de Variantes</div>
+                <div class="card-subtitle">Guía para Elegir el Clasificador Naive Bayes Apropiado</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Tabla Comparativa Completa</div>
+                
+                <table class="comparison-table">
+                    <tr>
+                        <th>Variante</th>
+                        <th>Tipo de Datos</th>
+                        <th>Distribución</th>
+                        <th>Mejor Para</th>
+                        <th>Parámetros (por clase)</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Gaussian</strong></td>
+                        <td>Continuos (ℝ)</td>
+                        <td>Normal \(\mathcal{N}(\mu, \sigma^2)\)</td>
+                        <td>Datos numéricos continuos, mediciones físicas</td>
+                        <td>\(2m\) (\(\mu\) y \(\sigma^2\) por feature)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Multinomial</strong></td>
+                        <td>Conteos discretos (ℕ)</td>
+                        <td>Multinomial</td>
+                        <td>Frecuencias de términos, clasificación de texto</td>
+                        <td>\(|V|\) (prob. por término)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bernoulli</strong></td>
+                        <td>Binarios {0,1}</td>
+                        <td>Bernoulli</td>
+                        <td>Presencia/ausencia, documentos cortos</td>
+                        <td>\(|V|\) (prob. por término)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Categorical</strong></td>
+                        <td>Categóricos discretos</td>
+                        <td>Categórica</td>
+                        <td>Variables nominales/ordinales múltiples</td>
+                        <td>\(\sum_i |\text{dom}(x_i)|\)</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Árbol de Decisión para Selección</div>
+                
+                <div class="formula-box">
+                    <div class="formula-title">Proceso de Selección:</div>
+                    <div style="margin-top: 15px; font-size: 0.95em; line-height: 2;">
+                        <strong>1. ¿Qué tipo de características tienes?</strong><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;├─ Continuas/Numéricas → <strong>¿Siguen distribución normal?</strong><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ Sí o aproximadamente → <span class="highlight">Gaussian NB</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ No (multimodal, sesgado) → Considerar transformaciones o KDE-based NB<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;├─ Conteos/Frecuencias → <strong>¿Es clasificación de texto?</strong><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ Sí, documentos largos → <span class="highlight">Multinomial NB</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ Sí, documentos cortos → Comparar <span class="highlight">Multinomial vs Bernoulli</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;├─ Binarias (0/1) → <strong>¿Todas las características son binarias?</strong><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ Sí → <span class="highlight">Bernoulli NB</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ Mezcla con otras → Considerar híbrido o binarizar todo<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;└─ Categóricas (>2 valores) → <span class="highlight">Categorical NB</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Naive Bayes Híbrido (Mixed NB)</div>
+                
+                <div class="section-content">
+                    En la práctica, muchos datasets tienen mezcla de tipos de características. Se puede construir un clasificador híbrido:
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Clasificador Híbrido:</div>
+                    $$P(c|\boldsymbol{x}) \propto P(c) \prod_{i \in \mathcal{I}_{cont}} P_{Gauss}(x_i|c) \prod_{j \in \mathcal{I}_{cat}} P_{Cat}(x_j|c) \prod_{k \in \mathcal{I}_{bin}} P_{Bern}(x_k|c)$$
+                    <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+                        donde \(\mathcal{I}_{cont}\), \(\mathcal{I}_{cat}\), \(\mathcal{I}_{bin}\) son conjuntos de índices de características continuas, categóricas y binarias respectivamente.
+                    </div>
+                </div>
+
+                <div class="key-points">
+                    <div class="key-points-title">Implementación de Naive Bayes Híbrido</div>
+                    <ul>
+                        <li>Identificar tipo de cada característica en preprocesamiento</li>
+                        <li>Aplicar distribución apropiada para cada característica</li>
+                        <li>Estimar parámetros independientemente por tipo</li>
+                        <li>Multiplicar verosimilitudes heterogéneas en clasificación</li>
+                        <li>Disponible en scikit-learn como pipeline personalizado</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Consideraciones Prácticas de Rendimiento</div>
+                
+                <div class="comparison-table">
+                    <tr>
+                        <th>Criterio</th>
+                        <th>Gaussian</th>
+                        <th>Multinomial</th>
+                        <th>Bernoulli</th>
+                        <th>Categorical</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Velocidad Entrenamiento</strong></td>
+                        <td>Muy Rápida</td>
+                        <td>Rápida</td>
+                        <td>Media</td>
+                        <td>Rápida</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Velocidad Predicción</strong></td>
+                        <td>Muy Rápida</td>
+                        <td>Rápida (solo términos presentes)</td>
+                        <td>Media (todo vocabulario)</td>
+                        <td>Muy Rápida</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Memoria</strong></td>
+                        <td>Baja (2m parámetros)</td>
+                        <td>Media-Alta (|V| parámetros)</td>
+                        <td>Media-Alta (|V| parámetros)</td>
+                        <td>Variable (depende de categorías)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Escalabilidad</strong></td>
+                        <td>Excelente</td>
+                        <td>Muy Buena</td>
+                        <td>Buena</td>
+                        <td>Buena</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Robustez a Outliers</strong></td>
+                        <td>Baja</td>
+                        <td>Media</td>
+                        <td>Alta</td>
+                        <td>Alta</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Recomendaciones Específicas por Dominio</div>
+                
+                <div class="applications-grid">
+                    <div class="application-card">
+                        <div class="application-title">NLP y Text Mining</div>
+                        <strong>Primera opción:</strong> Multinomial NB<br>
+                        <strong>Alternativa:</strong> Bernoulli NB para textos cortos<br>
+                        <strong>Feature engineering:</strong> TF-IDF, n-gramas, stemming
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Medicina y Diagnóstico</div>
+                        <strong>Primera opción:</strong> Gaussian NB (mediciones continuas)<br>
+                        <strong>Alternativa:</strong> Categorical NB (síntomas categóricos)<br>
+                        <strong>Consideración:</strong> Híbrido si hay mezcla
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">E-commerce y Recomendación</div>
+                        <strong>Primera opción:</strong> Categorical NB<br>
+                        <strong>Características:</strong> Categorías de producto, preferencias<br>
+                        <strong>Alternativa:</strong> Multinomial para historial de compras
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Bioinformática</div>
+                        <strong>Primera opción:</strong> Multinomial NB (secuencias)<br>
+                        <strong>Alternativa:</strong> Gaussian NB (expresión génica)<br>
+                        <strong>Feature:</strong> k-mers, niveles de expresión
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Visión por Computadora</div>
+                        <strong>Primera opción:</strong> Gaussian NB (características extraídas)<br>
+                        <strong>Características:</strong> HOG, SIFT descriptors, histogramas<br>
+                        <strong>Nota:</strong> Raramente competitivo con CNNs
+                    </div>
+                    <div class="application-card">
+                        <div class="application-title">Análisis de Sensores IoT</div>
+                        <strong>Primera opción:</strong> Gaussian NB<br>
+                        <strong>Características:</strong> Lecturas continuas de sensores<br>
+                        <strong>Consideración:</strong> Ventanas temporales, features agregados
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Limitaciones Universales de Naive Bayes</div>
+                
+                <div class="note">
+                    <div class="note-title">Cuándo NO Usar Naive Bayes (Cualquier Variante)</div>
+                    <ul style="padding-left: 25px; margin-top: 10px;">
+                        <li><strong>Características altamente correlacionadas</strong>: El supuesto de independencia se viola severamente, llevar a probabilidades mal calibradas</li>
+                        <li><strong>Interacciones complejas críticas</strong>: NB no puede capturar interacciones entre características (considerar árboles, SVM, redes neuronales)</li>
+                        <li><strong>Fronteras de decisión no lineales complejas</strong>: Aunque kernels podrían ayudar, otros métodos son más naturales</li>
+                        <li><strong>Datasets muy pequeños con alta dimensión</strong>: Problemas de estimación de parámetros, considerar regularización fuerte o dimensionality reduction</li>
+                        <li><strong>Necesidad de probabilidades bien calibradas</strong>: NB puede dar buenas clasificaciones pero probabilidades sesgadas (considerar calibración post-hoc)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Mejoras y Extensiones Modernas</div>
+                
+                <div class="key-points">
+                    <div class="key-points-title">Técnicas Avanzadas</div>
+                    <ul>
+                        <li><strong>Averaged One-Dependence Estimators (AODE)</strong>: Relaja independencia permitiendo dependencias de un padre</li>
+                        <li><strong>Tree-Augmented Naive Bayes (TAN)</strong>: Estructura de árbol entre características manteniendo tratabilidad</li>
+                        <li><strong>Lazy Bayesian Rules (LBR)</strong>: Selección local de características por instancia</li>
+                        <li><strong>Calibración de probabilidades</strong>: Platt scaling, isotonic regression para mejorar estimaciones probabilísticas</li>
+                        <li><strong>Feature selection bayesiana</strong>: Eliminar características irrelevantes mediante información mutua</li>
+                        <li><strong>Kernel Naive Bayes</strong>: Usar kernel density estimation en lugar de distribuciones paramétricas</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Checklist de Implementación</div>
+                
+                <div class="key-points">
+                    <div class="key-points-title">Pasos para Implementación Efectiva</div>
+                    <ul>
+                        <li>Analizar tipos de características en tu dataset</li>
+                        <li>Verificar supuestos distribucionales (normalidad, independencia)</li>
+                        <li>Preprocesar datos apropiadamente (encoding, normalización si es Gaussian)</li>
+                        <li>Seleccionar variante o híbrido según tipos de características</li>
+                        <li>Configurar suavizado de Laplace (\(\alpha\)) mediante validación cruzada</li>
+                        <li>Entrenar modelo con datos de entrenamiento</li>
+                        <li>Evaluar con métricas apropiadas (accuracy, F1, AUC, log-loss)</li>
+                        <li>Analizar errores y considerar feature engineering</li>
+                        <li>Comparar con baseline y otros algoritmos</li>
+                        <li>Si es necesario, calibrar probabilidades</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

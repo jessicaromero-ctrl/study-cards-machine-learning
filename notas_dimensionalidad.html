@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reducción de Dimensionalidad — Notas de Estudio</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161a24;
+    --border: #252c3d;
+    --accent1: #7fffd4; /* aquamarine */
+    --accent2: #ff6b6b;
+    --accent3: #ffd166;
+    --text: #e8eaf0;
+    --muted: #6b7592;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Fraunces', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(127,255,212,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(127,255,212,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 30px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    margin-bottom: 70px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent1);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    background: rgba(127,255,212,0.08);
+    border: 1px solid rgba(127,255,212,0.2);
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  h1 span { color: var(--accent1); }
+
+  .subtitle {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 600px;
+  }
+
+  /* FLOW DIAGRAM */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 50px 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 30px;
+    overflow-x: auto;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .flow-step {
+    text-align: center;
+    flex: 1;
+    min-width: 110px;
+  }
+
+  .flow-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin: 0 auto 12px;
+    border: 2px solid;
+  }
+
+  .flow-step:nth-child(1) .flow-icon { border-color: var(--accent1); background: rgba(127,255,212,0.1); }
+  .flow-step:nth-child(3) .flow-icon { border-color: var(--accent3); background: rgba(255,209,102,0.1); }
+  .flow-step:nth-child(5) .flow-icon { border-color: var(--accent2); background: rgba(255,107,107,0.1); }
+  .flow-step:nth-child(7) .flow-icon { border-color: #a78bfa; background: rgba(167,139,250,0.1); }
+
+  .flow-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .flow-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .flow-arrow {
+    font-size: 20px;
+    color: var(--border);
+    flex-shrink: 0;
+    padding: 0 8px;
+    padding-top: 0;
+    margin-top: -20px;
+  }
+
+  /* SECTIONS */
+  .section {
+    margin-bottom: 50px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .section:nth-child(3) { animation-delay: 0.2s; }
+  .section:nth-child(4) { animation-delay: 0.3s; }
+  .section:nth-child(5) { animation-delay: 0.4s; }
+  .section:nth-child(6) { animation-delay: 0.5s; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .step-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent1);
+    border: 1px solid var(--accent1);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 4px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+
+  .card p {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #c5c9d6;
+    margin-bottom: 12px;
+  }
+
+  .card p:last-child { margin-bottom: 0; }
+
+  /* STATS GRID */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .stat-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent1);
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .stat-card.c1::after { background: var(--accent1); }
+  .stat-card.c2::after { background: var(--accent3); }
+  .stat-card.c3::after { background: var(--accent2); }
+  .stat-card.c4::after { background: #a78bfa; }
+  .stat-card.c5::after { background: #38bdf8; }
+
+  .stat-var {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .c1 .stat-var { color: var(--accent1); }
+  .c2 .stat-var { color: var(--accent3); }
+  .c3 .stat-var { color: var(--accent2); }
+  .c4 .stat-var { color: #a78bfa; }
+  .c5 .stat-var { color: #38bdf8; }
+
+  .stat-name {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .stat-formula {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.04);
+    padding: 4px 8px;
+    border-radius: 3px;
+  }
+
+  .stat-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #0a0c10;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .code-block .comment { color: #4b5563; }
+  .code-block .kw { color: var(--accent1); }
+  .code-block .fn { color: var(--accent3); }
+  .code-block .str { color: var(--accent2); }
+  .code-block .var { color: #a78bfa; }
+  .code-block .num { color: #38bdf8; }
+
+  .code-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  /* VISUAL: 4096 → 5 */
+  .reduction-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    padding: 40px 20px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .dim-box {
+    text-align: center;
+  }
+
+  .pixels {
+    display: grid;
+    grid-template-columns: repeat(8, 8px);
+    gap: 2px;
+    margin: 0 auto 12px;
+    width: fit-content;
+  }
+
+  .pixel {
+    width: 8px;
+    height: 8px;
+    border-radius: 1px;
+    background: var(--accent1);
+    opacity: 0.3;
+    animation: pulse 2s infinite;
+  }
+
+  .pixel:nth-child(odd) { animation-delay: 0.5s; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+  }
+
+  .dim-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .dim-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent1);
+  }
+
+  .big-arrow {
+    font-size: 36px;
+    color: var(--accent3);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .stats-boxes {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sbox {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 3px;
+    border-left: 3px solid;
+  }
+
+  .sbox.s1 { border-color: var(--accent1); background: rgba(127,255,212,0.05); color: var(--accent1); }
+  .sbox.s2 { border-color: var(--accent3); background: rgba(255,209,102,0.05); color: var(--accent3); }
+  .sbox.s3 { border-color: var(--accent2); background: rgba(255,107,107,0.05); color: var(--accent2); }
+  .sbox.s4 { border-color: #a78bfa; background: rgba(167,139,250,0.05); color: #a78bfa; }
+  .sbox.s5 { border-color: #38bdf8; background: rgba(56,189,248,0.05); color: #38bdf8; }
+
+  /* ALERT */
+  .alert {
+    background: rgba(255,209,102,0.07);
+    border: 1px solid rgba(255,209,102,0.3);
+    border-radius: 8px;
+    padding: 20px 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .alert-icon { font-size: 20px; flex-shrink: 0; }
+  .alert-text { font-size: 14px; line-height: 1.7; color: #c5c9d6; }
+  .alert-text strong { color: var(--accent3); }
+
+  /* SVM + GRID SEARCH */
+  .grid-visual {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .grid-cell {
+    border-radius: 4px;
+    padding: 10px 8px;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    border: 1px solid transparent;
+    transition: all 0.3s;
+    cursor: default;
+  }
+
+  .grid-cell:hover { transform: scale(1.05); }
+
+  .grid-cell.best {
+    border-color: var(--accent1);
+    background: rgba(127,255,212,0.12);
+    color: var(--accent1);
+    box-shadow: 0 0 20px rgba(127,255,212,0.2);
+  }
+
+  .grid-cell.good {
+    background: rgba(127,255,212,0.04);
+    color: #6b7592;
+    border-color: rgba(127,255,212,0.08);
+  }
+
+  .grid-cell .acc { font-size: 14px; font-weight: 700; display: block; margin-bottom: 2px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* FOOTER */
+  footer {
+    margin-top: 80px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="tag">ML · Visión por Computadora</div>
+    <h1>Reducción de<br><span>Dimensionalidad</span></h1>
+    <p class="subtitle">Cómo pasar de un vector de 4096 píxeles a solo 5 características estadísticas, y luego clasificar con SVM + Grid Search.</p>
+  </header>
+
+  <!-- FLOW -->
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-icon">🖼️</div>
+      <div class="flow-title">Imagen</div>
+      <div class="flow-label">64×64 px</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-icon">📐</div>
+      <div class="flow-title">Escala de grises</div>
+      <div class="flow-label">Flatten</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-icon">📊</div>
+      <div class="flow-title">5 Estadísticas</div>
+      <div class="flow-label">X1…X5</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-icon">🤖</div>
+      <div class="flow-title">SVM + Grid</div>
+      <div class="flow-label">Clasificación</div>
+    </div>
+  </div>
+
+  <!-- PASO 1 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">01</div>
+      <h2>¿Por qué reducir dimensionalidad?</h2>
+    </div>
+
+    <div class="reduction-visual">
+      <div class="dim-box">
+        <div class="pixels">
+          <!-- 64 pixels simulated -->
+          <div class="pixel"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel"></div>
+          <div class="pixel"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel"></div>
+          <div class="pixel"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel"></div>
+          <div class="pixel"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel"></div>
+          <div class="pixel"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel"></div>
+          <div class="pixel"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel"></div>
+          <div class="pixel"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel"></div>
+          <div class="pixel"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel"></div>
+        </div>
+        <div class="dim-num">4,096</div>
+        <div class="dim-label">características</div>
+        <div class="dim-label" style="font-size:10px;margin-top:4px;">(64×64 píxeles)</div>
+      </div>
+      <div class="big-arrow">→</div>
+      <div class="dim-box">
+        <div class="stats-boxes">
+          <div class="sbox s1">X1 — Media</div>
+          <div class="sbox s2">X2 — Mediana</div>
+          <div class="sbox s3">X3 — Moda</div>
+          <div class="sbox s4">X4 — Máximo</div>
+          <div class="sbox s5">X5 — Mínimo</div>
+        </div>
+        <div class="dim-num" style="margin-top:16px;color:var(--accent3);">5</div>
+        <div class="dim-label">características</div>
+        <div class="dim-label" style="font-size:10px;margin-top:4px;">reducción del 99.9%</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p>Una imagen de 64×64 píxeles en escala de grises genera un vector de <strong style="color:var(--accent1)">4,096 valores</strong>. Trabajar directamente con este vector hace que el entrenamiento sea lento y costoso (la "maldición de la dimensionalidad"). La solución es <em>resumir</em> cada imagen en pocos números representativos usando estadística descriptiva.</p>
+      <p>Estos 5 números capturan la distribución global de intensidad de píxeles, perdiendo información espacial pero ganando enorme velocidad y generalización.</p>
+    </div>
+  </div>
+
+  <!-- PASO 2 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">02</div>
+      <h2>Las 5 características estadísticas</h2>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card c1">
+        <div class="stat-var">X1</div>
+        <div class="stat-name">Media</div>
+        <div class="stat-formula">np.mean(píxeles)</div>
+        <div class="stat-desc">Promedio de intensidad. Indica si la imagen es globalmente clara u oscura.</div>
+      </div>
+      <div class="stat-card c2">
+        <div class="stat-var">X2</div>
+        <div class="stat-name">Mediana</div>
+        <div class="stat-formula">np.median(píxeles)</div>
+        <div class="stat-desc">Valor central. Más robusta que la media ante píxeles muy brillantes o muy oscuros (outliers).</div>
+      </div>
+      <div class="stat-card c3">
+        <div class="stat-var">X3</div>
+        <div class="stat-name">Moda</div>
+        <div class="stat-formula">stats.mode(píxeles)</div>
+        <div class="stat-desc">Valor más frecuente. Captura el color de fondo dominante de la imagen.</div>
+      </div>
+      <div class="stat-card c4">
+        <div class="stat-var">X4</div>
+        <div class="stat-name">Máximo</div>
+        <div class="stat-formula">np.max(píxeles)</div>
+        <div class="stat-desc">Píxel más brillante. Indica si hay zonas muy iluminadas o reflejos.</div>
+      </div>
+      <div class="stat-card c5">
+        <div class="stat-var">X5</div>
+        <div class="stat-name">Mínimo</div>
+        <div class="stat-formula">np.min(píxeles)</div>
+        <div class="stat-desc">Píxel más oscuro. Refleja sombras, bordes oscuros o fondo negro.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 3 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">03</div>
+      <h2>Función de extracción de características</h2>
+    </div>
+
+    <div class="code-label">Python · OpenCV + NumPy + SciPy</div>
+    <div class="code-block">
+<span class="kw">import</span> cv2
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">from</span> scipy <span class="kw">import</span> stats
+
+<span class="kw">def</span> <span class="fn">extraer_caracteristicas</span>(ruta_imagen):
+    <span class="comment"># 1. Cargar imagen en escala de grises</span>
+    img = cv2.imread(ruta_imagen, cv2.IMREAD_GRAYSCALE)
+
+    <span class="comment"># 2. Redimensionar a 64×64 (normalizar tamaño)</span>
+    img = cv2.resize(img, (<span class="num">64</span>, <span class="num">64</span>))
+
+    <span class="comment"># 3. Aplanar → vector de 4096 valores</span>
+    flat = img.flatten().astype(float)
+
+    <span class="comment"># 4. Calcular las 5 estadísticas</span>
+    media   = np.<span class="fn">mean</span>(flat)            <span class="comment"># X1</span>
+    mediana = np.<span class="fn">median</span>(flat)          <span class="comment"># X2</span>
+    moda    = stats.mode(flat).mode[<span class="num">0</span>]   <span class="comment"># X3</span>
+    maximo  = np.<span class="fn">max</span>(flat)             <span class="comment"># X4</span>
+    minimo  = np.<span class="fn">min</span>(flat)             <span class="comment"># X5</span>
+
+    <span class="kw">return</span> [media, mediana, moda, maximo, minimo]
+    </div>
+  </div>
+
+  <!-- PASO 4 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">04</div>
+      <h2>SVM + Grid Search explicados</h2>
+    </div>
+
+    <div class="card">
+      <p><strong style="color:var(--accent1)">SVM (Support Vector Machine)</strong> busca el hiperplano que mejor separa las clases. En nuestro espacio de 5 dimensiones, necesitamos ajustar hiperparámetros clave: <code style="color:var(--accent3)">C</code> (penalización del error) y <code style="color:var(--accent3)">kernel</code> (lineal, rbf, polinomial).</p>
+      <p><strong style="color:var(--accent3)">Grid Search</strong> prueba sistemáticamente todas las combinaciones posibles de hiperparámetros y usa <em>validación cruzada</em> para encontrar la combinación con mejor exactitud. Es fuerza bruta inteligente.</p>
+    </div>
+
+    <div class="code-label">Grid Search con validación cruzada (cv=5)</div>
+    <div class="code-block">
+<span class="kw">from</span> sklearn.svm <span class="kw">import</span> SVC
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> GridSearchCV, train_test_split
+<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> classification_report, accuracy_score
+
+<span class="comment"># Definir la cuadrícula de hiperparámetros</span>
+param_grid = {
+    <span class="str">'C'</span>:      [<span class="num">0.1</span>, <span class="num">1</span>, <span class="num">10</span>, <span class="num">100</span>],
+    <span class="str">'kernel'</span>: [<span class="str">'linear'</span>, <span class="str">'rbf'</span>, <span class="str">'poly'</span>],
+    <span class="str">'gamma'</span>:  [<span class="str">'scale'</span>, <span class="str">'auto'</span>]
+}
+
+<span class="comment"># Grid Search con 5-fold Cross Validation</span>
+grid_search = <span class="fn">GridSearchCV</span>(
+    <span class="fn">SVC</span>(),
+    param_grid,
+    cv=<span class="num">5</span>,          <span class="comment"># 5 particiones de validación cruzada</span>
+    scoring=<span class="str">'accuracy'</span>,
+    n_jobs=<span class="num">-1</span>,     <span class="comment"># Usar todos los núcleos del CPU</span>
+    verbose=<span class="num">1</span>
+)
+
+grid_search.<span class="fn">fit</span>(X_train, y_train)
+
+<span class="comment"># Resultados</span>
+print(<span class="str">f"Mejores parámetros: {grid_search.best_params_}"</span>)
+print(<span class="str">f"Mejor exactitud CV: {grid_search.best_score_:.4f}"</span>)
+
+<span class="comment"># Evaluar en test</span>
+best_model = grid_search.best_estimator_
+y_pred = best_model.<span class="fn">predict</span>(X_test)
+print(<span class="str">f"Exactitud en test: {accuracy_score(y_test, y_pred):.4f}"</span>)
+print(<span class="fn">classification_report</span>(y_test, y_pred))
+
+<span class="comment"># Guardar resultados del Grid Search</span>
+results_df = pd.<span class="fn">DataFrame</span>(grid_search.cv_results_)
+results_df.<span class="fn">to_csv</span>(<span class="str">'grid_search_results.csv'</span>, index=<span class="kw">False</span>)
+    </div>
+
+    <!-- Grid visual -->
+    <div class="card" style="margin-top:16px;">
+      <p style="margin-bottom:16px;font-size:13px;color:var(--muted);font-family:'Space Mono',monospace;">VISUALIZACIÓN: combinaciones de hiperparámetros (cada celda = un modelo entrenado)</p>
+      <div class="grid-visual">
+        <div class="grid-cell good"><span class="acc">72%</span>C=0.1, linear</div>
+        <div class="grid-cell good"><span class="acc">78%</span>C=1, linear</div>
+        <div class="grid-cell good"><span class="acc">81%</span>C=10, linear</div>
+        <div class="grid-cell good"><span class="acc">80%</span>C=100, linear</div>
+        <div class="grid-cell good"><span class="acc">79%</span>C=0.1, rbf</div>
+        <div class="grid-cell good"><span class="acc">85%</span>C=1, rbf</div>
+        <div class="grid-cell best"><span class="acc">✓ 91%</span>C=10, rbf</div>
+        <div class="grid-cell good"><span class="acc">89%</span>C=100, rbf</div>
+        <div class="grid-cell good"><span class="acc">74%</span>C=0.1, poly</div>
+        <div class="grid-cell good"><span class="acc">77%</span>C=1, poly</div>
+        <div class="grid-cell good"><span class="acc">82%</span>C=10, poly</div>
+        <div class="grid-cell good"><span class="acc">83%</span>C=100, poly</div>
+      </div>
+      <p style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:12px;">* Grid Search elige automáticamente el mejor ✓</p>
+    </div>
+  </div>
+
+  <!-- PASO 5 CÓDIGO COMPLETO -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">05</div>
+      <h2>Código completo corregido</h2>
+    </div>
+
+    <div class="alert" style="margin-bottom:20px;">
+      <div class="alert-icon">💡</div>
+      <div class="alert-text">El código original usaba <strong>KNeighborsClassifier</strong>. Para la práctica con Grid Search completo se migra a <strong>SVM con GridSearchCV</strong>, guardando los resultados tal como pide el profesor.</div>
+    </div>
+
+    <div class="code-label">dimensionalidad_final_v2.py — Versión completa con SVM + Grid Search</div>
+    <div class="code-block">
+<span class="comment"># -*- coding: utf-8 -*-</span>
+<span class="kw">import</span> cv2, os, glob
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">from</span> scipy <span class="kw">import</span> stats
+<span class="kw">from</span> sklearn.svm <span class="kw">import</span> SVC
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> GridSearchCV, train_test_split
+<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> accuracy_score, classification_report
+
+<span class="comment"># ─── 1. Extracción de características ───────────────────────────────</span>
+<span class="kw">def</span> <span class="fn">extraer_caracteristicas</span>(ruta):
+    img  = cv2.<span class="fn">imread</span>(ruta, cv2.IMREAD_GRAYSCALE)
+    img  = cv2.<span class="fn">resize</span>(img, (<span class="num">64</span>, <span class="num">64</span>))
+    flat = img.<span class="fn">flatten</span>().<span class="fn">astype</span>(float)
+    <span class="kw">return</span> [
+        np.<span class="fn">mean</span>(flat),           <span class="comment"># X1 Media</span>
+        np.<span class="fn">median</span>(flat),         <span class="comment"># X2 Mediana</span>
+        stats.<span class="fn">mode</span>(flat).mode[<span class="num">0</span>], <span class="comment"># X3 Moda</span>
+        np.<span class="fn">max</span>(flat),            <span class="comment"># X4 Máximo</span>
+        np.<span class="fn">min</span>(flat),            <span class="comment"># X5 Mínimo</span>
+    ]
+
+<span class="comment"># ─── 2. Generar dataset ──────────────────────────────────────────────</span>
+<span class="kw">def</span> <span class="fn">generar_dataset</span>(rutas_dict, archivo_csv=<span class="str">"dataset.csv"</span>):
+    datos = []
+    <span class="kw">for</span> clase, carpeta <span class="kw">in</span> rutas_dict.<span class="fn">items</span>():
+        <span class="kw">for</span> ruta <span class="kw">in</span> glob.<span class="fn">glob</span>(os.path.<span class="fn">join</span>(carpeta, <span class="str">"*.jpg"</span>)):
+            feats = <span class="fn">extraer_caracteristicas</span>(ruta)
+            datos.<span class="fn">append</span>(feats + [clase])
+    cols = [<span class="str">"media"</span>, <span class="str">"mediana"</span>, <span class="str">"moda"</span>, <span class="str">"maximo"</span>, <span class="str">"minimo"</span>, <span class="str">"Clase"</span>]
+    df   = pd.<span class="fn">DataFrame</span>(datos, columns=cols)
+    df.<span class="fn">to_csv</span>(archivo_csv, index=<span class="kw">False</span>)
+    print(<span class="str">f"Dataset guardado: {archivo_csv} ({len(df)} registros)"</span>)
+    <span class="kw">return</span> df
+
+<span class="comment"># ─── 3. Entrenar SVM con Grid Search ────────────────────────────────</span>
+<span class="kw">def</span> <span class="fn">entrenar_con_grid_search</span>(df):
+    X = df[[<span class="str">"media"</span>, <span class="str">"mediana"</span>, <span class="str">"moda"</span>, <span class="str">"maximo"</span>, <span class="str">"minimo"</span>]].<span class="fn">values</span>
+    y = df[<span class="str">"Clase"</span>].<span class="fn">values</span>
+    X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(
+        X, y, test_size=<span class="num">0.2</span>, random_state=<span class="num">42</span>, stratify=y
+    )
+
+    param_grid = {
+        <span class="str">'C'</span>:      [<span class="num">0.1</span>, <span class="num">1</span>, <span class="num">10</span>, <span class="num">100</span>],
+        <span class="str">'kernel'</span>: [<span class="str">'linear'</span>, <span class="str">'rbf'</span>],
+        <span class="str">'gamma'</span>:  [<span class="str">'scale'</span>, <span class="str">'auto'</span>],
+    }
+
+    gs = <span class="fn">GridSearchCV</span>(<span class="fn">SVC</span>(), param_grid, cv=<span class="num">5</span>,
+                      scoring=<span class="str">'accuracy'</span>, n_jobs=<span class="num">-1</span>, verbose=<span class="num">1</span>)
+    gs.<span class="fn">fit</span>(X_train, y_train)
+
+    <span class="comment"># Guardar resultados del Grid Search (para el reporte)</span>
+    pd.<span class="fn">DataFrame</span>(gs.cv_results_).<span class="fn">to_csv</span>(<span class="str">"grid_search_results.csv"</span>, index=<span class="kw">False</span>)
+
+    print(<span class="str">"\n--- RESULTADOS GRID SEARCH ---"</span>)
+    print(<span class="str">f"Mejores parámetros : {gs.best_params_}"</span>)
+    print(<span class="str">f"Exactitud CV (best): {gs.best_score_:.4f}"</span>)
+
+    y_pred = gs.best_estimator_.<span class="fn">predict</span>(X_test)
+    print(<span class="str">f"Exactitud en test  : {accuracy_score(y_test, y_pred):.4f}"</span>)
+    print(<span class="fn">classification_report</span>(y_test, y_pred))
+
+<span class="comment"># ─── 4. Main ─────────────────────────────────────────────────────────</span>
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
+    rutas = {
+        <span class="str">"A"</span>: <span class="str">"a/*.mp4"</span>,  <span class="comment"># Ajustar según tu estructura</span>
+        <span class="str">"B"</span>: <span class="str">"b/*.mp4"</span>,
+    }
+    df = <span class="fn">generar_dataset</span>(rutas)
+    <span class="fn">entrenar_con_grid_search</span>(df)
+    </div>
+  </div>
+
+  <!-- RESUMEN -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">06</div>
+      <h2>Resumen conceptual</h2>
+    </div>
+    <div class="card">
+      <p>El pipeline completo es: <strong style="color:var(--accent1)">Imagen → Escala de grises → Resize 64×64 → Flatten → 5 estadísticas → SVM → Grid Search → Mejor modelo</strong>.</p>
+      <p>Grid Search garantiza que no elegiste los hiperparámetros "a ojo", sino que los evaluaste sistemáticamente con validación cruzada. Los resultados se guardan en <code style="color:var(--accent3)">grid_search_results.csv</code> para incluirlos en el reporte sin tener que repetir el experimento.</p>
+      <p>La reducción de 4,096 → 5 dimensiones sacrifica información espacial (dónde están los píxeles) pero conserva la distribución global de intensidad, que suele ser suficiente para distinguir categorías visuales.</p>
+    </div>
+  </div>
+
+  <footer>
+    <span>Notas de estudio · Reducción de Dimensionalidad</span>
+    <span>SVM + Grid Search · sklearn · OpenCV</span>
+  </footer>
+
+</div>
+</body>
+</html>
